@@ -11,12 +11,12 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { initializeDatabase } from '@/db';
 
 const Index = () => {
-  const { 
-    transactions, 
-    stats, 
-    addTransaction 
+  const {
+    transactions,
+    stats,
+    addTransaction
   } = useTransactions();
-  
+
   const { formatCurrency } = useCurrency();
 
   useEffect(() => {
@@ -49,18 +49,22 @@ const Index = () => {
           variant="primary"
           delay={0}
         />
+        {/* Monthly Income Card */}
         <StatCard
           title="Monthly Income"
           value={formatCurrency(stats.monthlyIncome)}
           icon={TrendingUp}
-          variant="secondary"
+          variant="income" // Changed from secondary
           delay={0.1}
         />
+
+        {/* Monthly Expenses Card */}
         <StatCard
           title="Monthly Expenses"
           value={formatCurrency(stats.monthlyExpenses)}
           change={stats.expenseChange}
           icon={TrendingDown}
+          variant="expense" // Added variant
           delay={0.2}
         />
         <StatCard

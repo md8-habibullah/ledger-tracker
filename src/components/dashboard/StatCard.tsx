@@ -7,31 +7,38 @@ interface StatCardProps {
   value: string;
   change?: number;
   icon: LucideIcon;
-  variant?: 'default' | 'primary' | 'secondary' | 'destructive';
+  variant?: 'default' | 'primary' | 'secondary' | 'destructive' | 'income' | 'expense';
   delay?: number;
 }
 
-export function StatCard({ 
-  title, 
-  value, 
-  change, 
-  icon: Icon, 
+export function StatCard({
+  title,
+  value,
+  change,
+  icon: Icon,
   variant = 'default',
-  delay = 0 
+  delay = 0
 }: StatCardProps) {
+  // Add the styles to the variants objects
   const variants = {
     default: 'bg-card border-border',
     primary: 'glass neon-border',
     secondary: 'bg-secondary/10 border-secondary/20',
     destructive: 'bg-destructive/10 border-destructive/20',
-  };
+    // New variants using your tailwind colors
+    income: 'bg-emerald-500/10 border-emerald-500/20',
+    expense: 'bg-rose-500/10 border-rose-500/20',
+  };;
 
   const iconVariants = {
     default: 'bg-muted text-muted-foreground',
     primary: 'bg-primary/20 text-primary',
     secondary: 'bg-secondary/20 text-secondary',
     destructive: 'bg-destructive/20 text-destructive',
-  };
+    // New icon backgrounds
+    income: 'bg-emerald-500/20 text-emerald-500',
+    expense: 'bg-rose-500/20 text-rose-500',
+  };;
 
   return (
     <motion.div
@@ -50,8 +57,8 @@ export function StatCard({
           {change !== undefined && (
             <div className={cn(
               "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-              change >= 0 
-                ? "bg-secondary/20 text-secondary" 
+              change >= 0
+                ? "bg-secondary/20 text-secondary"
                 : "bg-destructive/20 text-destructive"
             )}>
               {change >= 0 ? '↑' : '↓'} {Math.abs(change).toFixed(1)}%

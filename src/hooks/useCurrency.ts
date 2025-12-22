@@ -18,7 +18,7 @@ export const currencies: Currency[] = [
   { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit', locale: 'ms-MY' },
 ];
 
-const CURRENCY_STORAGE_KEY = 'takatrack-currency';
+const CURRENCY_STORAGE_KEY = 'LedgerTracker-currency';
 
 export function useCurrency() {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(() => {

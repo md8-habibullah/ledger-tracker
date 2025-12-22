@@ -26,7 +26,7 @@ export interface Budget {
   createdAt: Date;
 }
 
-const db = new Dexie('TakaTrack') as Dexie & {
+const db = new Dexie('LedgerTracker') as Dexie & {
   transactions: EntityTable<Transaction, 'id'>;
   categories: EntityTable<Category, 'id'>;
   budgets: EntityTable<Budget, 'id'>;

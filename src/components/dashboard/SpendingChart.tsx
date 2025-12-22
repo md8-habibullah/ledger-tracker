@@ -43,27 +43,30 @@ export function SpendingChart({ data }: SpendingChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
+              {/* Income: Keep Emerald/Green */}
               <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0} />
               </linearGradient>
+
+              {/* Expense: Change to Rose/Red (e.g., hsl(346, 84%, 61%)) */}
               <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(187, 85%, 53%)" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="hsl(187, 85%, 53%)" stopOpacity={0} />
+                <stop offset="5%" stopColor="hsl(346, 84%, 61%)" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="hsl(346, 84%, 61%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              stroke="hsl(222, 30%, 18%)" 
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="hsl(222, 30%, 18%)"
               vertical={false}
             />
-            <XAxis 
-              dataKey="month" 
+            <XAxis
+              dataKey="month"
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
             />
-            <YAxis 
+            <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
@@ -79,21 +82,18 @@ export function SpendingChart({ data }: SpendingChartProps) {
               labelStyle={{ color: 'hsl(210, 40%, 98%)' }}
               formatter={(value: number) => [formatCurrency(value), '']}
             />
+            {/* ... update the Area components below */}
             <Area
               type="monotone"
               dataKey="income"
-              stroke="hsl(160, 84%, 39%)"
-              strokeWidth={2}
-              fill="url(#incomeGradient)"
-              name="Income"
+              stroke="hsl(160, 84%, 39%)" // Emerald
+            // ...
             />
             <Area
               type="monotone"
               dataKey="expenses"
-              stroke="hsl(187, 85%, 53%)"
-              strokeWidth={2}
-              fill="url(#expenseGradient)"
-              name="Expenses"
+              stroke="hsl(346, 84%, 61%)" // Rose
+            // ...
             />
           </AreaChart>
         </ResponsiveContainer>

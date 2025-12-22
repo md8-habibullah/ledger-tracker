@@ -156,7 +156,7 @@ export const themes: Theme[] = [
   },
 ];
 
-const THEME_STORAGE_KEY = 'takatrack-theme';
+const THEME_STORAGE_KEY = 'LedgerTracker-theme';
 
 export function useTheme() {
   const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
