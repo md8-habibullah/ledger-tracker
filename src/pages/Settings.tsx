@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Settings as SettingsIcon, 
@@ -6,8 +6,13 @@ import {
   Download, 
   Upload, 
   AlertTriangle,
-  Check,
-  DollarSign
+  Palette,
+  Shield,
+  Moon,
+  Sun,
+  Waves,
+  TreePine,
+  Sunset
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
@@ -34,21 +39,25 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { useCurrency, currencies } from '@/hooks/useCurrency';
+import { useTheme, themes, ThemeId } from '@/hooks/useTheme';
+import { cn } from '@/lib/utils';
 
-const CURRENCIES = [
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-];
+const themeIcons: Record<ThemeId, React.ElementType> = {
+  dark: Moon,
+  light: Sun,
+  ocean: Waves,
+  forest: TreePine,
+  sunset: Sunset,
+};
 
 const Settings = () => {
-  const categories = useLiveQuery(() => db.categories.toArray()) ?? [];
+  const categoriesData = useLiveQuery(() => db.categories.toArray()) ?? [];
   const transactions = useLiveQuery(() => db.transactions.toArray()) ?? [];
   const budgets = useLiveQuery(() => db.budgets.toArray()) ?? [];
   
-  const [currency, setCurrency] = useState('USD');
+  const { currency, setCurrency, currencies: currencyList } = useCurrency();
+  const { currentTheme, setTheme, themes: themeList } = useTheme();
 
   const handleExportData = async () => {
     const data = {
@@ -56,13 +65,15 @@ const Settings = () => {
       categories: await db.categories.toArray(),
       budgets: await db.budgets.toArray(),
       exportedAt: new Date().toISOString(),
+      appVersion: '1.0.0',
+      appName: 'TakaTrack',
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `expenseiq-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `takatrack-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -128,19 +139,85 @@ const Settings = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Data Stats */}
+        {/* Theme Selection */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
         >
           <Card className="glass border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <SettingsIcon className="h-5 w-5 text-primary" />
+                <Palette className="h-5 w-5 text-primary" />
+                Appearance
+              </CardTitle>
+              <CardDescription>
+                Choose your preferred theme
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                {themeList.map((theme) => {
+                  const Icon = themeIcons[theme.id];
+                  const isActive = currentTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      onClick={() => {
+                        setTheme(theme.id);
+                        toast.success(`Theme changed to ${theme.name}`);
+                      }}
+                      className={cn(
+                        "relative flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-300",
+                        isActive
+                          ? "bg-primary/20 ring-2 ring-primary shadow-lg"
+                          : "bg-muted/30 hover:bg-muted/50 border border-border/50"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-3 rounded-xl transition-colors",
+                        isActive ? "bg-primary/30" : "bg-muted/50"
+                      )}>
+                        <Icon className={cn(
+                          "h-6 w-6",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )} />
+                      </div>
+                      <span className={cn(
+                        "text-sm font-medium",
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      )}>
+                        {theme.name}
+                      </span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTheme"
+                          className="absolute inset-0 rounded-xl border-2 border-primary"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Data Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="glass border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-secondary" />
                 Data Overview
               </CardTitle>
               <CardDescription>
-                Your stored data statistics
+                Your stored data (100% offline & secure)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -150,7 +227,7 @@ const Settings = () => {
                   <p className="text-xs text-muted-foreground">Transactions</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-4 text-center">
-                  <p className="text-2xl font-bold font-mono text-secondary">{categories.length}</p>
+                  <p className="text-2xl font-bold font-mono text-secondary">{categoriesData.length}</p>
                   <p className="text-xs text-muted-foreground">Categories</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-4 text-center">
@@ -166,12 +243,12 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
         >
           <Card className="glass border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-secondary" />
+                <span className="text-xl text-primary">৳</span>
                 Currency
               </CardTitle>
               <CardDescription>
@@ -179,19 +256,20 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-5 gap-2">
-                {CURRENCIES.map((curr) => (
+              <div className="grid grid-cols-4 gap-2">
+                {currencyList.map((curr) => (
                   <button
                     key={curr.code}
                     onClick={() => {
                       setCurrency(curr.code);
                       toast.success(`Currency set to ${curr.name}`);
                     }}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
-                      currency === curr.code
-                        ? 'bg-primary/20 text-primary ring-2 ring-primary'
-                        : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                    }`}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-3 rounded-xl transition-all",
+                      currency.code === curr.code
+                        ? "bg-primary/20 text-primary ring-2 ring-primary"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    )}
                   >
                     <span className="text-lg font-bold">{curr.symbol}</span>
                     <span className="text-xs">{curr.code}</span>
@@ -206,7 +284,7 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
           <Card className="glass border-border/50">
             <CardHeader>
@@ -251,7 +329,7 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
         >
           <Card className="glass border-destructive/30">
             <CardHeader>
@@ -299,7 +377,7 @@ const Settings = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.5 }}
         className="mt-6"
       >
         <Card className="glass border-border/50">
@@ -311,7 +389,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {categories.map((cat) => (
+              {categoriesData.map((cat) => (
                 <div
                   key={cat.id}
                   className="flex items-center gap-3 rounded-xl bg-muted/30 p-3"

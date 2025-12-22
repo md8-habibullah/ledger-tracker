@@ -45,8 +45,8 @@ export function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <h1 className="text-lg font-semibold text-gradient">ExpenseIQ</h1>
-              <p className="text-xs text-muted-foreground">Smart Finance</p>
+              <h1 className="text-lg font-semibold text-gradient">TakaTrack</h1>
+              <p className="text-xs text-muted-foreground">Secure Finance</p>
             </motion.div>
           )}
         </div>

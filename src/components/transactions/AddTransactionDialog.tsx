@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface AddTransactionDialogProps {
   onAdd: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
@@ -35,6 +36,7 @@ export function AddTransactionDialog({ onAdd }: AddTransactionDialogProps) {
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { symbol } = useCurrency();
 
   const categories = useLiveQuery(() => db.categories.toArray()) ?? [];
   const filteredCategories = categories.filter(
@@ -123,7 +125,7 @@ export function AddTransactionDialog({ onAdd }: AddTransactionDialogProps) {
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">{symbol}</span>
               <Input
                 id="amount"
                 type="number"
