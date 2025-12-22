@@ -44,12 +44,12 @@ export function SpendingChart({ data }: SpendingChartProps) {
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
-              tickFormatter={(value) => `${symbol}${value / 1000}k`} // Dynamic symbol
+              tickFormatter={(value) => `${symbol}${value / 1000}k`}
             />
             <Tooltip
               contentStyle={{ backgroundColor: 'hsl(222, 47%, 10%)', border: '1px solid hsl(222, 30%, 18%)', borderRadius: '12px' }}
               labelStyle={{ color: 'hsl(210, 40%, 98%)' }}
-              formatter={(value: number) => [formatCurrency(value), '']} // Dynamic formatting
+              formatter={(value: number) => [formatCurrency(value), '']}
             />
             <Area type="monotone" dataKey="income" stroke="hsl(160, 84%, 39%)" strokeWidth={2} fill="url(#incomeGradient)" name="Income" />
             <Area type="monotone" dataKey="expenses" stroke="hsl(346, 84%, 61%)" strokeWidth={2} fill="url(#expenseGradient)" name="Expenses" />

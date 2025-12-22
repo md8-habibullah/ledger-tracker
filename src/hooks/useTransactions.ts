@@ -6,14 +6,14 @@ import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 export function useTransactions() {
   const transactions = useLiveQuery(async () => {
     const txns = await db.transactions.toArray();
-    
+
     return txns.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       if (dateA !== dateB) {
         return dateB - dateA;
       }
-      
+
       const timeA = new Date(a.createdAt).getTime();
       const timeB = new Date(b.createdAt).getTime();
       return timeB - timeA;
@@ -77,15 +77,14 @@ export function useTransactions() {
       .reduce((sum, t) => sum + t.amount, 0);
 
     const balance = totalIncome - totalExpenses;
-    const savingsRate = monthlyIncome > 0 
-      ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100 
+    const savingsRate = monthlyIncome > 0
+      ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100
       : 0;
 
     const expenseChange = lastMonthExpenses > 0
       ? ((monthlyExpenses - lastMonthExpenses) / lastMonthExpenses) * 100
       : 0;
 
-    // Category breakdown for current month
     const categoryBreakdown = currentMonthTxns
       .filter((t) => t.type === 'expense')
       .reduce((acc, t) => {
@@ -98,7 +97,7 @@ export function useTransactions() {
       const monthDate = subMonths(now, 5 - i);
       const start = startOfMonth(monthDate);
       const end = endOfMonth(monthDate);
-      
+
       const monthTxns = transactions.filter(
         (t) => new Date(t.date) >= start && new Date(t.date) <= end
       );

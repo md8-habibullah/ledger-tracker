@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import Ledger from "./pages/Ledger";
 import Budgets from "./pages/Budgets";
 import Settings from "./pages/Settings";
-import About from "./pages/About"; // Import About
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

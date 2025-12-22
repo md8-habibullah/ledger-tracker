@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
-import { Sidebar, navItems } from './Sidebar'; // Import navItems
+import { Sidebar, navItems } from './Sidebar';
 import { motion } from 'framer-motion';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Import Sheet components
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, Wallet } from "lucide-react";
 import { NavLink, useLocation } from 'react-router-dom';
@@ -90,7 +90,6 @@ export function MainLayout({ children }: MainLayoutProps) {
         </Sheet>
       </div>
 
-      {/* Main Content Area - Updated margins */}
       <main className="md:ml-64 min-h-screen transition-all duration-300">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
