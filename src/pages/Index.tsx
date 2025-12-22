@@ -5,8 +5,9 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { CategoryChart } from '@/components/dashboard/CategoryChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
-import { AddTransactionDialog } from '@/components/transactions/AddTransactionDialog';
+import { QuickEntry } from '@/components/dashboard/QuickEntry';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useCurrency } from '@/hooks/useCurrency';
 import { initializeDatabase } from '@/db';
 
 const Index = () => {
@@ -15,24 +16,17 @@ const Index = () => {
     stats, 
     addTransaction 
   } = useTransactions();
+  
+  const { formatCurrency } = useCurrency();
 
   useEffect(() => {
     initializeDatabase();
   }, []);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
     <MainLayout>
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             Welcome back<span className="text-gradient">.</span>
@@ -41,8 +35,10 @@ const Index = () => {
             Here's your financial overview for this month
           </p>
         </div>
-        <AddTransactionDialog onAdd={addTransaction} />
       </div>
+
+      {/* Quick Entry - Big +/- Buttons */}
+      <QuickEntry onAdd={addTransaction} />
 
       {/* Stats Grid - Bento Style */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">

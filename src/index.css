@@ -56,6 +56,13 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 222 30% 15%;
     --sidebar-ring: 187 85% 53%;
+    
+    /* Chart colors */
+    --chart-1: 187 85% 53%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 35 95% 55%;
+    --chart-4: 0 72% 51%;
+    --chart-5: 280 80% 60%;
   }
 }
 
