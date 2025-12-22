@@ -9,11 +9,12 @@ import {
   ArrowDownRight,
   ChevronDown,
   Check,
-  Pencil, // Added Pencil icon
-  Plus    // Added Plus icon
+  Pencil,
+  Plus
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { TransactionDialog } from '@/components/transactions/AddTransactionDialog'; // Updated import
+import { TransactionDialog } from '@/components/transactions/AddTransactionDialog';
+import { TransactionDetailsDialog } from '@/components/transactions/TransactionDetailsDialog'; // Import Details Dialog
 import { useTransactions } from '@/hooks/useTransactions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,7 @@ const Ledger = () => {
     transactions, 
     categories,
     addTransaction, 
-    updateTransaction, // Destructure updateTransaction
+    updateTransaction,
     deleteTransaction,
     deleteMultipleTransactions 
   } = useTransactions();
@@ -54,9 +55,13 @@ const Ledger = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
-  // State for Edit/Add Dialog
+  // State for Add/Edit Dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | undefined>(undefined);
+
+  // State for View Details Dialog
+  const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter((txn) => {
@@ -114,6 +119,12 @@ const Ledger = () => {
     setIsDialogOpen(true);
   };
 
+  // Handler for row click
+  const handleRowClick = (txn: Transaction) => {
+    setSelectedTxn(txn);
+    setIsDetailsOpen(true);
+  };
+
   return (
     <MainLayout>
       {/* Header */}
@@ -127,7 +138,6 @@ const Ledger = () => {
           </p>
         </div>
         
-        {/* Updated Add Button */}
         <Button 
           onClick={handleAddClick}
           className="bg-gradient-primary text-primary-foreground hover:opacity-90 glow-primary"
@@ -136,7 +146,7 @@ const Ledger = () => {
           Add Transaction
         </Button>
 
-        {/* The Dialog Component */}
+        {/* Add/Edit Dialog */}
         <TransactionDialog 
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
@@ -144,9 +154,17 @@ const Ledger = () => {
           onUpdate={updateTransaction}
           transactionToEdit={transactionToEdit}
         />
+
+        {/* View Details Dialog */}
+        <TransactionDetailsDialog
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
+          transaction={selectedTxn}
+          onEdit={handleEditClick}
+        />
       </div>
 
-      {/* Filters */}
+      {/* Filters (same as before) */}
       <div className="glass rounded-2xl border border-border/50 p-4 mb-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           {/* Search */}
@@ -240,7 +258,7 @@ const Ledger = () => {
 
       {/* Transactions Table */}
       <div className="glass rounded-2xl border border-border/50 overflow-hidden">
-        {/* Table Header - Updated Grid Columns for Actions */}
+        {/* Table Header */}
         <div className="grid grid-cols-[auto,1fr,1fr,1fr,1fr,auto] gap-4 p-4 border-b border-border/50 text-sm font-medium text-muted-foreground">
           <Checkbox
             checked={selectedIds.length === filteredTransactions.length && filteredTransactions.length > 0}
@@ -266,15 +284,19 @@ const Ledger = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.02 }}
+                onClick={() => handleRowClick(txn)} // Row click handler
                 className={cn(
-                  "grid grid-cols-[auto,1fr,1fr,1fr,1fr,auto] gap-4 p-4 items-center transition-colors hover:bg-muted/30",
+                  "grid grid-cols-[auto,1fr,1fr,1fr,1fr,auto] gap-4 p-4 items-center transition-colors hover:bg-muted/30 cursor-pointer", // Added cursor-pointer
                   selectedIds.includes(txn.id!) && "bg-primary/5"
                 )}
               >
-                <Checkbox
-                  checked={selectedIds.includes(txn.id!)}
-                  onCheckedChange={() => handleSelect(txn.id!)}
-                />
+                <div onClick={(e) => e.stopPropagation()}> 
+                  {/* Stop propagation for Checkbox */}
+                  <Checkbox
+                    checked={selectedIds.includes(txn.id!)}
+                    onCheckedChange={() => handleSelect(txn.id!)}
+                  />
+                </div>
                 
                 <div className="flex items-center gap-3">
                   <div className={cn(
@@ -319,7 +341,10 @@ const Ledger = () => {
                 </span>
 
                 {/* Actions: Edit and Delete */}
-                <div className="flex items-center gap-1 justify-end">
+                <div 
+                  className="flex items-center gap-1 justify-end"
+                  onClick={(e) => e.stopPropagation()} // Stop propagation for buttons
+                >
                   <Button
                     variant="ghost"
                     size="icon"
