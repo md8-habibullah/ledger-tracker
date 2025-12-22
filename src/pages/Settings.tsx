@@ -13,7 +13,7 @@ import {
   Waves,
   TreePine,
   Sunset,
-  Globe
+  Globe // Added Globe icon
 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
@@ -57,11 +57,12 @@ const Settings = () => {
   const transactions = useLiveQuery(() => db.transactions.toArray()) ?? [];
   const budgets = useLiveQuery(() => db.budgets.toArray()) ?? [];
   
+  // Destructured new numberFormat properties from the hook
   const { 
     currency, 
     setCurrency, 
     currencies: currencyList,
-    numberFormat,
+    numberFormat, 
     setNumberFormat 
   } = useCurrency();
   const { currentTheme, setTheme, themes: themeList } = useTheme();
@@ -99,10 +100,10 @@ const Settings = () => {
 
       if (data.transactions) {
         await db.transactions.clear();
-        await db.transactions.bulkAdd(data.transactions.map((t: Record<string, unknown>) => ({
+        await db.transactions.bulkAdd(data.transactions.map((t: { date: string; createdAt: string }) => ({
           ...t,
-          date: new Date(t.date as string),
-          createdAt: new Date(t.createdAt as string),
+          date: new Date(t.date),
+          createdAt: new Date(t.createdAt),
         })));
       }
 
@@ -113,9 +114,9 @@ const Settings = () => {
 
       if (data.budgets) {
         await db.budgets.clear();
-        await db.budgets.bulkAdd(data.budgets.map((b: Record<string, unknown>) => ({
+        await db.budgets.bulkAdd(data.budgets.map((b: { createdAt: string }) => ({
           ...b,
-          createdAt: new Date(b.createdAt as string),
+          createdAt: new Date(b.createdAt),
         })));
       }
 
@@ -135,6 +136,7 @@ const Settings = () => {
 
   return (
     <MainLayout>
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">
           Settings<span className="text-gradient">.</span>
@@ -145,13 +147,21 @@ const Settings = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
+        {/* Theme Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
           <Card className="glass border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5 text-primary" /> Appearance
+                <Palette className="h-5 w-5 text-primary" />
+                Appearance
               </CardTitle>
-              <CardDescription>Choose your preferred theme</CardDescription>
+              <CardDescription>
+                Choose your preferred theme
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -161,16 +171,39 @@ const Settings = () => {
                   return (
                     <button
                       key={theme.id}
-                      onClick={() => { setTheme(theme.id); toast.success(`Theme changed to ${theme.name}`); }}
+                      onClick={() => {
+                        setTheme(theme.id);
+                        toast.success(`Theme changed to ${theme.name}`);
+                      }}
                       className={cn(
                         "relative flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-300",
-                        isActive ? "bg-primary/20 ring-2 ring-primary shadow-lg" : "bg-muted/30 hover:bg-muted/50 border border-border/50"
+                        isActive
+                          ? "bg-primary/20 ring-2 ring-primary shadow-lg"
+                          : "bg-muted/30 hover:bg-muted/50 border border-border/50"
                       )}
                     >
-                      <div className={cn("p-3 rounded-xl transition-colors", isActive ? "bg-primary/30" : "bg-muted/50")}>
-                        <Icon className={cn("h-6 w-6", isActive ? "text-primary" : "text-muted-foreground")} />
+                      <div className={cn(
+                        "p-3 rounded-xl transition-colors",
+                        isActive ? "bg-primary/30" : "bg-muted/50"
+                      )}>
+                        <Icon className={cn(
+                          "h-6 w-6",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )} />
                       </div>
-                      <span className={cn("text-sm font-medium", isActive ? "text-primary" : "text-muted-foreground")}>{theme.name}</span>
+                      <span className={cn(
+                        "text-sm font-medium",
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      )}>
+                        {theme.name}
+                      </span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTheme"
+                          className="absolute inset-0 rounded-xl border-2 border-primary"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
                     </button>
                   );
                 })}
@@ -179,24 +212,71 @@ const Settings = () => {
           </Card>
         </motion.div>
 
-        {/* Currency Settings */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        {/* Data Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <Card className="glass border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span className="text-xl text-primary">৳</span> Currency
+                <Shield className="h-5 w-5 text-secondary" />
+                Data Overview
               </CardTitle>
-              <CardDescription>Set your preferred currency</CardDescription>
+              <CardDescription>
+                Your stored data (100% offline & secure)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-xl bg-muted/50 p-4 text-center">
+                  <p className="text-2xl font-bold font-mono text-primary">{transactions.length}</p>
+                  <p className="text-xs text-muted-foreground">Transactions</p>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-4 text-center">
+                  <p className="text-2xl font-bold font-mono text-secondary">{categoriesData.length}</p>
+                  <p className="text-xs text-muted-foreground">Categories</p>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-4 text-center">
+                  <p className="text-2xl font-bold font-mono">{budgets.length}</p>
+                  <p className="text-xs text-muted-foreground">Budgets</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Currency Settings */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="glass border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl text-primary">৳</span>
+                Currency
+              </CardTitle>
+              <CardDescription>
+                Set your preferred currency
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-4 gap-2">
                 {currencyList.map((curr) => (
                   <button
                     key={curr.code}
-                    onClick={() => { setCurrency(curr.code); toast.success(`Currency set to ${curr.name}`); }}
+                    onClick={() => {
+                      setCurrency(curr.code);
+                      toast.success(`Currency set to ${curr.name}`);
+                    }}
                     className={cn(
                       "flex flex-col items-center justify-center p-3 rounded-xl transition-all",
-                      currency.code === curr.code ? "bg-primary/20 text-primary ring-2 ring-primary" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                      currency.code === curr.code
+                        ? "bg-primary/20 text-primary ring-2 ring-primary"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
                     )}
                   >
                     <span className="text-lg font-bold">{curr.symbol}</span>
@@ -208,31 +288,48 @@ const Settings = () => {
           </Card>
         </motion.div>
 
-        {/* New: Number Format Setting */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        {/* Regional Number Format Setting */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
           <Card className="glass border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" /> Regional Format
+                <Globe className="h-5 w-5 text-primary" />
+                Regional Format
               </CardTitle>
-              <CardDescription>Numbers display (0-9 vs local)</CardDescription>
+              <CardDescription>
+                Numbers display (0-9 vs local numerals)
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2 p-1 bg-muted/50 rounded-xl">
                 <button
-                  onClick={() => { setNumberFormat('international'); toast.success('Format set to International'); }}
+                  onClick={() => {
+                    setNumberFormat('international');
+                    toast.success('Number format set to International (0-9)');
+                  }}
                   className={cn(
                     "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-                    numberFormat === 'international' ? "bg-background shadow-sm text-primary" : "text-muted-foreground"
+                    numberFormat === 'international' 
+                      ? "bg-background shadow-sm text-primary" 
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   International (0-9)
                 </button>
                 <button
-                  onClick={() => { setNumberFormat('local'); toast.success('Format set to Local'); }}
+                  onClick={() => {
+                    setNumberFormat('local');
+                    toast.success('Number format set to Local');
+                  }}
                   className={cn(
                     "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-                    numberFormat === 'local' ? "bg-background shadow-sm text-primary" : "text-muted-foreground"
+                    numberFormat === 'local' 
+                      ? "bg-background shadow-sm text-primary" 
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Local
@@ -242,8 +339,134 @@ const Settings = () => {
           </Card>
         </motion.div>
 
-        {/* Backup/Restore & Danger Zone omitted for brevity, but they stay the same as your code */}
+        {/* Export/Import */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="glass border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5 text-primary" />
+                Backup & Restore
+              </CardTitle>
+              <CardDescription>
+                Export or import your data as JSON
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={handleExportData}
+                className="w-full bg-gradient-primary text-primary-foreground"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export All Data
+              </Button>
+              
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportData}
+                  className="hidden"
+                  id="import-file"
+                />
+                <Label
+                  htmlFor="import-file"
+                  className="flex items-center justify-center gap-2 w-full h-11 px-4 rounded-lg border border-border bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                >
+                  <Upload className="h-4 w-4" />
+                  Import Data from JSON
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Danger Zone */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="glass border-destructive/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Irreversible actions - proceed with caution
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear All Data
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="glass-strong border-border/50">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all your transactions and budgets. 
+                      Categories will be preserved. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleClearAllData}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Yes, delete everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
+
+      {/* Categories List */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mt-6"
+      >
+        <Card className="glass border-border/50">
+          <CardHeader>
+            <CardTitle>Categories</CardTitle>
+            <CardDescription>
+              Your expense and income categories
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {categoriesData.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="flex items-center gap-3 rounded-xl bg-muted/30 p-3"
+                >
+                  <div 
+                    className="h-4 w-4 rounded-full" 
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{cat.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{cat.type}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </MainLayout>
   );
 };
