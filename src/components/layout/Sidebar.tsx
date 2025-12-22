@@ -1,10 +1,10 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Receipt, 
-  TrendingUp, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Receipt,
+  TrendingUp,
+  Settings,
   Wallet,
   Info,
   ChevronLeft,
@@ -43,14 +43,16 @@ export function Sidebar() {
             <Wallet className="h-5 w-5 text-primary-foreground" />
           </div>
           {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <h1 className="text-lg font-semibold text-gradient">Ledger Tracker</h1>
-              <p className="text-xs text-muted-foreground">Secure Finance</p>
-            </motion.div>
+            <NavLink to="/" className="flex-1">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <h1 className="text-lg font-semibold text-gradient">Ledger Tracker</h1>
+                <p className="text-xs text-muted-foreground">Secure Finance</p>
+              </motion.div>
+            </NavLink>
           )}
         </div>
 
