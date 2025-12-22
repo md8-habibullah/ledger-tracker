@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { ArrowUpRight, ArrowDownRight, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, ChevronRight, Pencil } from 'lucide-react'; // Added Pencil
 import { Link } from 'react-router-dom';
 import { Transaction } from '@/db';
 import { cn } from '@/lib/utils';
@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
+  onEdit?: (transaction: Transaction) => void; // Added onEdit prop
 }
 
-export function RecentTransactions({ transactions }: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, onEdit }: RecentTransactionsProps) {
   const recentTxns = transactions.slice(0, 5);
 
   const formatCurrency = (value: number) => {
@@ -83,6 +84,18 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   {format(new Date(txn.date), 'MMM d')}
                 </p>
               </div>
+
+              {/* Added Edit Button */}
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(txn)}
+                  className="h-8 w-8 text-muted-foreground hover:text-primary ml-2"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
             </motion.div>
           ))}
         </div>

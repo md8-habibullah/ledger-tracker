@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -6,22 +6,40 @@ import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { CategoryChart } from '@/components/dashboard/CategoryChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { QuickEntry } from '@/components/dashboard/QuickEntry';
+import { TransactionDialog } from '@/components/transactions/AddTransactionDialog'; // Import Dialog
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCurrency } from '@/hooks/useCurrency';
-import { initializeDatabase } from '@/db';
+import { initializeDatabase, type Transaction } from '@/db';
 
 const Index = () => {
   const {
     transactions,
     stats,
-    addTransaction
+    addTransaction,
+    updateTransaction // Get update function
   } = useTransactions();
 
   const { formatCurrency } = useCurrency();
+  
+  // State for Edit Dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | undefined>(undefined);
 
   useEffect(() => {
     initializeDatabase();
   }, []);
+
+  // Handle Edit Click
+  const handleEditClick = (txn: Transaction) => {
+    setTransactionToEdit(txn);
+    setIsDialogOpen(true);
+  };
+
+  // Handle Add Click (from QuickEntry or Dialog close reset)
+  const handleOpenAdd = () => {
+    setTransactionToEdit(undefined);
+    setIsDialogOpen(false); // QuickEntry handles its own add, but this resets the state
+  };
 
   return (
     <MainLayout>
@@ -37,10 +55,16 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Quick Entry - Big +/- Buttons */}
+      {/* Quick Entry */}
       <QuickEntry onAdd={addTransaction} />
 
-      {/* Stats Grid - Bento Style */}
+      {/* Charts Grid */}
+      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        <SpendingChart data={stats.monthlyTrends} />
+        <CategoryChart data={stats.categoryBreakdown} />
+      </div>
+
+      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <StatCard
           title="Total Balance"
@@ -49,22 +73,19 @@ const Index = () => {
           variant="primary"
           delay={0}
         />
-        {/* Monthly Income Card */}
         <StatCard
           title="Monthly Income"
           value={formatCurrency(stats.monthlyIncome)}
           icon={TrendingUp}
-          variant="income" // Changed from secondary
+          variant="income"
           delay={0.1}
         />
-
-        {/* Monthly Expenses Card */}
         <StatCard
           title="Monthly Expenses"
           value={formatCurrency(stats.monthlyExpenses)}
           change={stats.expenseChange}
           icon={TrendingDown}
-          variant="expense" // Added variant
+          variant="expense"
           delay={0.2}
         />
         <StatCard
@@ -75,14 +96,20 @@ const Index = () => {
         />
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid gap-6 lg:grid-cols-2 mb-8">
-        <SpendingChart data={stats.monthlyTrends} />
-        <CategoryChart data={stats.categoryBreakdown} />
-      </div>
+      {/* Recent Transactions with Edit functionality */}
+      <RecentTransactions 
+        transactions={transactions} 
+        onEdit={handleEditClick} 
+      />
 
-      {/* Recent Transactions */}
-      <RecentTransactions transactions={transactions} />
+      {/* Transaction Dialog for Editing */}
+      <TransactionDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onAdd={addTransaction}
+        onUpdate={updateTransaction}
+        transactionToEdit={transactionToEdit}
+      />
     </MainLayout>
   );
 };

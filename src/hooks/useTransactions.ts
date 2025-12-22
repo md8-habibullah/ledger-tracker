@@ -4,21 +4,23 @@ import { useMemo } from 'react';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 
 export function useTransactions() {
-  // Updated sorting logic: Sorts by Date Descending, then ID Descending
+  // FIXED: Sort by Date DESC, then by CreatedAt DESC
   const transactions = useLiveQuery(async () => {
     const txns = await db.transactions.toArray();
     
     return txns.sort((a, b) => {
-      // 1. Primary Sort: Date (Newest first)
+      // 1. Primary Sort: Transaction Date (Newest first)
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       if (dateA !== dateB) {
         return dateB - dateA;
       }
       
-      // 2. Secondary Sort: ID (Highest ID first)
+      // 2. Secondary Sort: Creation Time (Newest added first)
       // This ensures entries made on the same day appear "Last In, First Out"
-      return (b.id || 0) - (a.id || 0);
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      return timeB - timeA;
     });
   }) ?? [];
 
