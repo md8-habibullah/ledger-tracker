@@ -19,6 +19,7 @@ export const currencies: Currency[] = [
 ];
 
 const CURRENCY_STORAGE_KEY = 'LedgerTracker-currency';
+const FORMAT_STORAGE_KEY = 'LedgerTracker-number-format'; // New storage key
 
 export function useCurrency() {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(() => {
@@ -27,8 +28,12 @@ export function useCurrency() {
       const currency = currencies.find((c) => c.code === stored);
       if (currency) return currency;
     }
-    // Default to BDT (Bangladesh)
     return currencies[0];
+  });
+
+  // New state for number format: defaults to 'international' (0-9 digits)
+  const [numberFormat, setNumberFormat] = useState<'international' | 'local'>(() => {
+    return (localStorage.getItem(FORMAT_STORAGE_KEY) as 'international' | 'local') || 'international';
   });
 
   const setCurrency = useCallback((code: string) => {
@@ -39,19 +44,30 @@ export function useCurrency() {
     }
   }, []);
 
+  // Function to toggle number format
+  const changeNumberFormat = useCallback((format: 'international' | 'local') => {
+    localStorage.setItem(FORMAT_STORAGE_KEY, format);
+    setNumberFormat(format);
+  }, []);
+
   const formatCurrency = useCallback((value: number) => {
-    return new Intl.NumberFormat(currentCurrency.locale, {
+    // International uses 'en-US' locale for 0-9 digits, Local uses the currency's specific locale
+    const locale = numberFormat === 'international' ? 'en-US' : currentCurrency.locale;
+    
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currentCurrency.code,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
-  }, [currentCurrency]);
+  }, [currentCurrency, numberFormat]);
 
   return {
     currency: currentCurrency,
     currencies,
     setCurrency,
+    numberFormat,
+    setNumberFormat: changeNumberFormat,
     formatCurrency,
     symbol: currentCurrency.symbol,
   };

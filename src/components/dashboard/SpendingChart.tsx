@@ -1,13 +1,6 @@
 import { motion } from 'framer-motion';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useCurrency } from '@/hooks/useCurrency'; // Import hook
 
 interface SpendingChartProps {
   data: Array<{
@@ -18,14 +11,7 @@ interface SpendingChartProps {
 }
 
 export function SpendingChart({ data }: SpendingChartProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const { formatCurrency, symbol } = useCurrency(); // Use hook
 
   return (
     <motion.div
@@ -43,71 +29,41 @@ export function SpendingChart({ data }: SpendingChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
-              {/* Income: Keep Emerald/Green */}
               <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0} />
               </linearGradient>
-
-              {/* Expense: Change to Rose/Red (e.g., hsl(346, 84%, 61%)) */}
               <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(346, 84%, 61%)" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="hsl(346, 84%, 61%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(222, 30%, 18%)"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
-              tickFormatter={(value) => `৳${value / 1000}k`} // Changed $ to ৳
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(222, 30%, 18%)" vertical={false} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }} />
+            <YAxis 
+              axisLine={false} 
+              tickLine={false} 
+              tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }} 
+              tickFormatter={(value) => `${symbol}${value / 1000}k`} // Dynamic symbol
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(222, 47%, 10%)',
-                border: '1px solid hsl(222, 30%, 18%)',
-                borderRadius: '12px',
-                boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
-              }}
+              contentStyle={{ backgroundColor: 'hsl(222, 47%, 10%)', border: '1px solid hsl(222, 30%, 18%)', borderRadius: '12px' }}
               labelStyle={{ color: 'hsl(210, 40%, 98%)' }}
-              formatter={(value: number) => [formatCurrency(value), '']}
+              formatter={(value: number) => [formatCurrency(value), '']} // Dynamic formatting
             />
-            {/* ... update the Area components below */}
-            <Area
-              type="monotone"
-              dataKey="income"
-              stroke="hsl(160, 84%, 39%)" // Emerald
-            // ...
-            />
-            <Area
-              type="monotone"
-              dataKey="expenses"
-              stroke="hsl(346, 84%, 61%)" // Rose
-              fill="url(#expenseGradient)" // Add this line!
-              strokeWidth={2}
-              name="Expenses"
-            />
+            <Area type="monotone" dataKey="income" stroke="hsl(160, 84%, 39%)" strokeWidth={2} fill="url(#incomeGradient)" name="Income" />
+            <Area type="monotone" dataKey="expenses" stroke="hsl(346, 84%, 61%)" strokeWidth={2} fill="url(#expenseGradient)" name="Expenses" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       <div className="mt-4 flex items-center justify-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-emerald-500" /> {/* Changed from bg-secondary */}
+          <div className="h-3 w-3 rounded-full bg-emerald-500" />
           <span className="text-sm text-muted-foreground">Income</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-rose-500" /> {/* Changed from bg-primary */}
+          <div className="h-3 w-3 rounded-full bg-rose-500" />
           <span className="text-sm text-muted-foreground">Expenses</span>
         </div>
       </div>
