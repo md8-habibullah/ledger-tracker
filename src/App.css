@@ -40,3 +40,11 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Fix for Recharts black hover/focus outline */
+.recharts-sector:focus,
+.recharts-curve:focus,
+.recharts-pie-sector:focus,
+path:focus {
+  outline: none !important;
+}

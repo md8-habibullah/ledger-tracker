@@ -72,7 +72,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
         <p className="text-sm text-muted-foreground">This month's breakdown</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -81,25 +81,35 @@ export function CategoryChart({ data }: CategoryChartProps) {
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
-                outerRadius={100}
+                outerRadius={90}
                 paddingAngle={4}
                 dataKey="value"
+                stroke="none"
+                // Disable active shape if it causes flicker, or keep it for scaling
+                activeShape={{ stroke: 'none' }}
               >
                 {chartData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={entry.color}
-                    stroke="transparent"
+                    // FIX: This removes the black outline on hover
+                    style={{ outline: 'none' }}
+                    // Added a small stroke for better visibility between slices
+                    stroke="rgba(0,0,0,0.1)"
+                    strokeWidth={1}
                   />
                 ))}
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(222, 47%, 10%)',
-                  border: '1px solid hsl(222, 30%, 18%)',
+                  backgroundColor: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: '12px',
+                  color: 'hsl(var(--popover-foreground))',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                 }}
-                formatter={(value: number) => [formatCurrency(value), '']}
+                itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
+                formatter={(value: number) => [formatCurrency(value), 'Amount']}
               />
             </PieChart>
           </ResponsiveContainer>
