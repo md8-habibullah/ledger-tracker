@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 export const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Overview' },
   { path: '/ledger', icon: Receipt, label: 'Ledger' },
-  { path: '/budgets', icon: PiggyBank, label: 'Budgets' },
+  { path: '/budgets', icon: Wallet, label: 'Budgets' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
