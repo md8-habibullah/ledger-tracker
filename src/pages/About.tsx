@@ -54,7 +54,7 @@ const About = () => {
                                             habibullah.dev
                                         </Button>
                                     </a>
-                                    <a href="https://github.com/md8-habibullah/pocket-ledger-bd.git" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://github.com/md8-habibullah/ledger-tracker.git" target="_blank" rel="noopener noreferrer">
                                         <Button variant="outline" className="gap-2 border-border/50 hover:bg-secondary/10 hover:text-secondary">
                                             <Github className="h-4 w-4" />
                                             View Source Code
@@ -107,7 +107,7 @@ const About = () => {
 
                 {/* Footer */}
                 <div className="text-center text-sm text-muted-foreground pt-8">
-                    <p>© {new Date().getFullYear()} Pocket Ledger. Made in Bangladesh.</p>
+                    <p>© {new Date().getFullYear()} Ledger Tracker. Made in Bangladesh.</p>
                 </div>
             </div>
         </MainLayout>
