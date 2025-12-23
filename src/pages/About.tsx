@@ -10,7 +10,7 @@ const About = () => {
                 {/* Header Section */}
                 <div className="text-center space-y-4 mb-10">
                     <h1 className="text-4xl font-bold tracking-tight">
-                        About <span className="text-gradient">Pocket Ledger BD</span>
+                        About <span className="text-gradient">Ledger Tracker</span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                         A secure, offline-first personal finance tracker designed to help you take control of your financial journey.
@@ -44,7 +44,7 @@ const About = () => {
 
                                 <p className="text-muted-foreground">
                                     Passionate about building useful tools that solve real-world problems.
-                                    Pocket Ledger BD was created to provide a simple, privacy-focused way for people in Bangladesh and beyond to track their daily finances.
+                                    Ledger Tracker was created to provide a simple, privacy-focused way for people in Bangladesh and beyond to track their daily finances.
                                 </p>
 
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">

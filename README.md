@@ -1,4 +1,4 @@
-# Pocket Ledger BD
+# Ledger Tracker
 
 [![Framework](https://img.shields.io/badge/Framework-React_18-blue?style=flat-square&logo=react)](https://reactjs.org/)
 [![Build Tool](https://img.shields.io/badge/Build_Tool-Vite-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
@@ -6,7 +6,7 @@
 [![Language](https://img.shields.io/badge/Language-TypeScript-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Styling](https://img.shields.io/badge/Styling-Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
 
-**Pocket Ledger BD** is a secure, offline-first personal finance tracker designed to help users take full control of their financial journey with a privacy-focused approach. Built specifically with modern web technologies, it provides a seamless experience for tracking income, expenses, and budgets without ever sending your sensitive data to a server.
+**Ledger Tracker** is a secure, offline-first personal finance tracker designed to help users take full control of their financial journey with a privacy-focused approach. Built specifically with modern web technologies, it provides a seamless experience for tracking income, expenses, and budgets without ever sending your sensitive data to a server.
 
 ---
 
