@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/db';
+import { useTransactions } from '@/hooks/useTransactions';
 
 interface CategoryChartProps {
   data: Record<string, number>;
@@ -19,7 +18,7 @@ const COLORS = [
 ];
 
 export function CategoryChart({ data }: CategoryChartProps) {
-  const categories = useLiveQuery(() => db.categories.toArray()) ?? [];
+  const { categories } = useTransactions();
 
   const chartData = Object.entries(data)
     .map(([name, value]) => {

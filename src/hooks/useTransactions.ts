@@ -1,45 +1,149 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Transaction } from '@/db';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getDb, execQuery, saveDb, type Transaction, type Category, type Budget } from '@/db';
+import { useAuth } from '@/components/auth/AuthContext';
 import { useMemo } from 'react';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 
 export function useTransactions() {
-  const transactions = useLiveQuery(async () => {
-    const txns = await db.transactions.toArray();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-    return txns.sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      if (dateA !== dateB) {
-        return dateB - dateA;
-      }
+  const { data: transactions = [] } = useQuery({
+    queryKey: ['transactions', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const db = await getDb();
+      const txns = execQuery(db, 'SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC, createdAt DESC', [user.id]);
+      return txns as Transaction[];
+    },
+    enabled: !!user,
+  });
 
-      const timeA = new Date(a.createdAt).getTime();
-      const timeB = new Date(b.createdAt).getTime();
-      return timeB - timeA;
-    });
-  }) ?? [];
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const db = await getDb();
+      const cats = execQuery(db, 'SELECT * FROM categories');
+      return cats as Category[];
+    },
+  });
 
-  const categories = useLiveQuery(() => db.categories.toArray()) ?? [];
+  const { data: budgets = [] } = useQuery({
+    queryKey: ['budgets', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const db = await getDb();
+      const bgs = execQuery(db, 'SELECT * FROM budgets WHERE user_id = ?', [user.id]);
+      return bgs as Budget[];
+    },
+    enabled: !!user,
+  });
 
-  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
-    await db.transactions.add({
-      ...transaction,
-      createdAt: new Date(),
-    });
-  };
+  const addTransactionMutation = useMutation({
+    mutationFn: async (transaction: Omit<Transaction, 'id' | 'createdAt' | 'user_id'>) => {
+      if (!user) return;
+      const db = await getDb();
+      const now = new Date().toISOString();
+      db.run(
+        'INSERT INTO transactions (user_id, amount, type, category, description, date, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [user.id, transaction.amount, transaction.type, transaction.category, transaction.description, transaction.date, now]
+      );
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    },
+  });
 
-  const updateTransaction = async (id: number, updates: Partial<Transaction>) => {
-    await db.transactions.update(id, updates);
-  };
+  const updateTransactionMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: number; updates: Partial<Transaction> }) => {
+      if (!user) return;
+      const db = await getDb();
+      
+      const fields = Object.keys(updates).filter(k => k !== 'id' && k !== 'user_id');
+      const values = fields.map(k => (updates as any)[k]);
+      const setClause = fields.map(k => `${k} = ?`).join(', ');
+      
+      if (fields.length === 0) return;
 
-  const deleteTransaction = async (id: number) => {
-    await db.transactions.delete(id);
-  };
+      db.run(`UPDATE transactions SET ${setClause} WHERE id = ? AND user_id = ?`, [...values, id, user.id]);
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    },
+  });
 
-  const deleteMultipleTransactions = async (ids: number[]) => {
-    await db.transactions.bulkDelete(ids);
-  };
+  const deleteTransactionMutation = useMutation({
+    mutationFn: async (id: number) => {
+      if (!user) return;
+      const db = await getDb();
+      db.run('DELETE FROM transactions WHERE id = ? AND user_id = ?', [id, user.id]);
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    },
+  });
+
+  const deleteMultipleTransactionsMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      if (!user) return;
+      const db = await getDb();
+      const placeholders = ids.map(() => '?').join(',');
+      db.run(`DELETE FROM transactions WHERE id IN (${placeholders}) AND user_id = ?`, [...ids, user.id]);
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    },
+  });
+
+  const addBudgetMutation = useMutation({
+    mutationFn: async (budget: Omit<Budget, 'id' | 'createdAt' | 'user_id'>) => {
+      if (!user) return;
+      const db = await getDb();
+      const now = new Date().toISOString();
+      db.run(
+        'INSERT INTO budgets (user_id, category, amount, period, createdAt) VALUES (?, ?, ?, ?, ?)',
+        [user.id, budget.category, budget.amount, budget.period, now]
+      );
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', user?.id] });
+    },
+  });
+
+  const updateBudgetMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: number; updates: Partial<Budget> }) => {
+      if (!user) return;
+      const db = await getDb();
+      const fields = Object.keys(updates).filter(k => k !== 'id' && k !== 'user_id' && k !== 'createdAt');
+      const values = fields.map(k => (updates as any)[k]);
+      const setClause = fields.map(k => `${k} = ?`).join(', ');
+      
+      if (fields.length === 0) return;
+
+      db.run(`UPDATE budgets SET ${setClause} WHERE id = ? AND user_id = ?`, [...values, id, user.id]);
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', user?.id] });
+    },
+  });
+
+  const deleteBudgetMutation = useMutation({
+    mutationFn: async (id: number) => {
+      if (!user) return;
+      const db = await getDb();
+      db.run('DELETE FROM budgets WHERE id = ? AND user_id = ?', [id, user.id]);
+      await saveDb();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', user?.id] });
+    },
+  });
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -92,7 +196,6 @@ export function useTransactions() {
         return acc;
       }, {} as Record<string, number>);
 
-    // Monthly trends (last 6 months)
     const monthlyTrends = Array.from({ length: 6 }, (_, i) => {
       const monthDate = subMonths(now, 5 - i);
       const start = startOfMonth(monthDate);
@@ -133,10 +236,15 @@ export function useTransactions() {
   return {
     transactions,
     categories,
+    budgets,
     stats,
-    addTransaction,
-    updateTransaction,
-    deleteTransaction,
-    deleteMultipleTransactions,
+    addTransaction: addTransactionMutation.mutateAsync,
+    updateTransaction: (id: number, updates: Partial<Transaction>) => updateTransactionMutation.mutateAsync({ id, updates }),
+    deleteTransaction: deleteTransactionMutation.mutateAsync,
+    deleteMultipleTransactions: deleteMultipleTransactionsMutation.mutateAsync,
+    addBudget: addBudgetMutation.mutateAsync,
+    updateBudget: (id: number, updates: Partial<Budget>) => updateBudgetMutation.mutateAsync({ id, updates }),
+    deleteBudget: deleteBudgetMutation.mutateAsync,
+    isLoading: addTransactionMutation.isPending || updateTransactionMutation.isPending || deleteTransactionMutation.isPending || deleteMultipleTransactionsMutation.isPending || addBudgetMutation.isPending || updateBudgetMutation.isPending || deleteBudgetMutation.isPending,
   };
 }

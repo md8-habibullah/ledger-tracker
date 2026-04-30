@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Settings as SettingsIcon, 
   Trash2, 
   Download, 
   Upload, 
@@ -13,10 +12,10 @@ import {
   Waves,
   TreePine,
   Sunset,
-  Globe // Added Globe icon
+  Globe,
+  LogOut
 } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/db';
+import { getDb, saveDb, execQuery, type Transaction, type Category, type Budget } from '@/db';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,9 +39,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { useCurrency, currencies } from '@/hooks/useCurrency';
-import { useTheme, themes, ThemeId } from '@/hooks/useTheme';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useTheme, ThemeId } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useAuth } from '@/components/auth/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 const themeIcons: Record<ThemeId, React.ElementType> = {
   dark: Moon,
@@ -53,11 +55,10 @@ const themeIcons: Record<ThemeId, React.ElementType> = {
 };
 
 const Settings = () => {
-  const categoriesData = useLiveQuery(() => db.categories.toArray()) ?? [];
-  const transactions = useLiveQuery(() => db.transactions.toArray()) ?? [];
-  const budgets = useLiveQuery(() => db.budgets.toArray()) ?? [];
+  const { transactions, categories, budgets } = useTransactions();
+  const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
   
-  // Destructured new numberFormat properties from the hook
   const { 
     currency, 
     setCurrency, 
@@ -69,9 +70,9 @@ const Settings = () => {
 
   const handleExportData = async () => {
     const data = {
-      transactions: await db.transactions.toArray(),
-      categories: await db.categories.toArray(),
-      budgets: await db.budgets.toArray(),
+      transactions,
+      categories,
+      budgets,
       exportedAt: new Date().toISOString(),
       appVersion: '1.0.0',
       appName: 'LedgerTracker',
@@ -92,36 +93,38 @@ const Settings = () => {
 
   const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     try {
       const text = await file.text();
       const data = JSON.parse(text);
+      const db = await getDb();
 
       if (data.transactions) {
-        await db.transactions.clear();
-        await db.transactions.bulkAdd(data.transactions.map((t: { date: string; createdAt: string }) => ({
-          ...t,
-          date: new Date(t.date),
-          createdAt: new Date(t.createdAt),
-        })));
-      }
-
-      if (data.categories) {
-        await db.categories.clear();
-        await db.categories.bulkAdd(data.categories);
+        db.run('DELETE FROM transactions WHERE user_id = ?', [user.id]);
+        for (const t of data.transactions) {
+          db.run(
+            'INSERT INTO transactions (user_id, amount, type, category, description, date, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [user.id, t.amount, t.type, t.category, t.description, t.date, t.createdAt]
+          );
+        }
       }
 
       if (data.budgets) {
-        await db.budgets.clear();
-        await db.budgets.bulkAdd(data.budgets.map((b: { createdAt: string }) => ({
-          ...b,
-          createdAt: new Date(b.createdAt),
-        })));
+        db.run('DELETE FROM budgets WHERE user_id = ?', [user.id]);
+        for (const b of data.budgets) {
+          db.run(
+            'INSERT INTO budgets (user_id, category, amount, period, createdAt) VALUES (?, ?, ?, ?, ?)',
+            [user.id, b.category, b.amount, b.period, b.createdAt]
+          );
+        }
       }
 
+      await saveDb();
+      queryClient.invalidateQueries();
       toast.success('Data imported successfully!');
     } catch (error) {
+      console.error(error);
       toast.error('Failed to import data. Please check the file format.');
     }
 
@@ -129,21 +132,31 @@ const Settings = () => {
   };
 
   const handleClearAllData = async () => {
-    await db.transactions.clear();
-    await db.budgets.clear();
+    if (!user) return;
+    const db = await getDb();
+    db.run('DELETE FROM transactions WHERE user_id = ?', [user.id]);
+    db.run('DELETE FROM budgets WHERE user_id = ?', [user.id]);
+    await saveDb();
+    queryClient.invalidateQueries();
     toast.success('All data has been cleared');
   };
 
   return (
     <MainLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Settings<span className="text-gradient">.</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your preferences and data
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Settings<span className="text-gradient">.</span>
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your preferences and data
+          </p>
+        </div>
+        <Button variant="outline" onClick={logout} className="gap-2">
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -225,7 +238,7 @@ const Settings = () => {
                 Data Overview
               </CardTitle>
               <CardDescription>
-                Your stored data (100% offline & secure)
+                Logged in as <span className="font-semibold text-foreground">{user?.username}</span>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -235,7 +248,7 @@ const Settings = () => {
                   <p className="text-xs text-muted-foreground">Transactions</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-4 text-center">
-                  <p className="text-2xl font-bold font-mono text-secondary">{categoriesData.length}</p>
+                  <p className="text-2xl font-bold font-mono text-secondary">{categories.length}</p>
                   <p className="text-xs text-muted-foreground">Categories</p>
                 </div>
                 <div className="rounded-xl bg-muted/50 p-4 text-center">
@@ -361,11 +374,11 @@ const Settings = () => {
                 className="w-full bg-gradient-primary text-primary-foreground"
               >
                 <Download className="mr-2 h-4 w-4" />
-                Export All Data
+                Export My Data
               </Button>
               
               <div className="relative">
-                <Input
+                <input
                   type="file"
                   accept=".json"
                   onChange={handleImportData}
@@ -405,7 +418,7 @@ const Settings = () => {
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full">
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Clear All Data
+                    Clear My Data
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-strong border-border/50">
@@ -443,12 +456,12 @@ const Settings = () => {
           <CardHeader>
             <CardTitle>Categories</CardTitle>
             <CardDescription>
-              Your expense and income categories
+              Available expense and income categories
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {categoriesData.map((cat) => (
+              {categories.map((cat) => (
                 <div
                   key={cat.id}
                   className="flex items-center gap-3 rounded-xl bg-muted/30 p-3"

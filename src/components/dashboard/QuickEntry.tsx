@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus, X, Check } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Transaction } from '@/db';
+import { type Transaction } from '@/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,9 +14,10 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useTransactions } from '@/hooks/useTransactions';
 
 interface QuickEntryProps {
-  onAdd: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
+  onAdd: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
 }
 
 export function QuickEntry({ onAdd }: QuickEntryProps) {
@@ -27,8 +27,8 @@ export function QuickEntry({ onAdd }: QuickEntryProps) {
   const [category, setCategory] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { symbol } = useCurrency();
+  const { categories } = useTransactions();
 
-  const categories = useLiveQuery(() => db.categories.toArray()) ?? [];
   const filteredCategories = categories.filter(
     (c) => c.type === activeType || c.type === 'both'
   );
@@ -47,7 +47,7 @@ export function QuickEntry({ onAdd }: QuickEntryProps) {
         type: activeType,
         description,
         category,
-        date: new Date(),
+        date: new Date().toISOString().split('T')[0], // Keep as string
       });
 
       toast.success(`${activeType === 'income' ? 'Income' : 'Expense'} added!`);

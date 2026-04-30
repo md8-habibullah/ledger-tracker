@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, ArrowUpRight, ArrowDownRight, Save } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Transaction } from '@/db';
+import { Plus, ArrowUpRight, ArrowDownRight, Save } from 'lucide-react';
+import { type Transaction } from '@/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,11 +20,12 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useTransactions } from '@/hooks/useTransactions';
 
 interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
+  onAdd: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
   onUpdate: (id: number, updates: Partial<Transaction>) => Promise<void>;
   transactionToEdit?: Transaction;
 }
@@ -44,8 +44,8 @@ export function TransactionDialog({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { symbol } = useCurrency();
+  const { categories } = useTransactions();
 
-  const categories = useLiveQuery(() => db.categories.toArray()) ?? [];
   const filteredCategories = categories.filter(
     (c) => c.type === type || c.type === 'both'
   );
@@ -88,7 +88,7 @@ export function TransactionDialog({
         type,
         description,
         category,
-        date: new Date(date),
+        date: date, // Keep as string for SQLite
       };
 
       if (transactionToEdit && transactionToEdit.id) {
