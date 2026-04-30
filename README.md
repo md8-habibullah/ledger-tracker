@@ -1,122 +1,144 @@
-# 💳 LedgerTracker - Premium Serverless SQLite Expense Manager
+# LedgerTracker: Serverless SQLite Finance Manager
 
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-
-LedgerTracker is a state-of-the-art, fully offline-capable expense tracking application. It combines a premium Shadcn UI design with a robust **serverless SQLite** backend, providing users with high-performance data management without the need for a backend server.
+A high-performance expense tracking application built with React, Vite, TypeScript, Tailwind CSS, and Shadcn UI. It uses a serverless backend with sql.js (SQLite in the browser) and persistent storage via localforage.
 
 ---
 
-## 📸 Project Tour
+## 🖼️ Application Overview
 
 ### 1. Secure Authentication
-- **Location**: `/login`
-- **What it does**: Provides a sleek toggle between Login and Registration. It isolates user data using a relational schema.
-- **Visuals**: Vibrant gradients, glassmorphism effects, and smooth transitions.
+- **Route**: `/login`
+- **Functionality**: Toggle between login and registration. Data is isolated per user using a relational schema.
+- **Features**: Glassmorphism UI, smooth transitions, and persistent sessions.
 
-### 2. Interactive Dashboard
-- **Location**: `/`
-- **What it does**: Your financial command center. Features real-time stats cards (Balance, Income, Expenses, Savings Rate) and dynamic charts.
-- **Quick Entry**: A massive, accessible Plus/Minus interface for instant transaction logging.
+### 2. Financial Dashboard
+- **Route**: `/`
+- **Functionality**: Centralized overview of balance, income, expenses, and savings rate.
+- **Quick Entry**: Fast transaction logging for both income and expenses.
 
-### 3. Smart Ledger
-- **Location**: `/ledger`
-- **What it does**: A powerful data table with filtering, searching, and bulk delete capabilities. Every transaction is just a click away from being edited or viewed in detail.
+### 3. Transaction Ledger
+- **Route**: `/ledger`
+- **Functionality**: Complete searchable list of all transactions with filtering and bulk actions.
+- **Actions**: Edit, delete, and detailed view for every record.
 
-### 4. Budgeting & Goals
-- **Location**: `/budgets`
-- **What it does**: Set monthly or weekly limits for specific categories. Progress bars visualize your spending limits in real-time.
+### 4. Budget Management
+- **Route**: `/budgets`
+- **Functionality**: Category-specific budget limits with real-time progress visualization.
 
 ---
 
-## 🛠️ Technical Architecture
+## 🏗️ System Architecture
 
-LedgerTracker uses a unique "Memory-to-IndexedDB" persistence model. Here is how the data flows:
+The application operates entirely on the client-side, using WebAssembly to run a full SQL engine in the browser.
 
 ```mermaid
 graph TD
-    A[User Interface - React] -->|Actions| B[React Query Hooks]
-    B -->|SQL Queries| C[In-Memory SQLite - sql.js]
-    C -->|Auto-Export| D[Binary Blob - Uint8Array]
-    D -->|Persist| E[IndexedDB - ledger_tracker.db]
-    E -->|Load on Startup| C
-    B -->|UI Update| A
+    UI[React Components] -->|Mutations| Hooks[React Query Hooks]
+    Hooks -->|SQL| SQL[sql.js Engine]
+    SQL -->|Binary Export| Persistence[localforage]
+    Persistence -->|Storage| DB[(ledger_tracker.db)]
+    DB -->|Initialization| SQL
+    Hooks -->|Data| UI
 ```
 
-### Core Technologies
-- **Frontend**: React 18, TypeScript, Vite.
-- **Styling**: Tailwind CSS, Shadcn UI, Framer Motion.
-- **Database**: `sql.js` (SQLite compiled to WebAssembly).
-- **Persistence**: `localforage` (IndexedDB abstraction).
-- **State Management**: `@tanstack/react-query` (Data fetching & caching).
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **Framework** | React 18 | UI Layer |
+| **Build Tool** | Vite | Bundling & Dev Server |
+| **Database** | sql.js | In-browser SQL Engine (WASM) |
+| **Persistence** | localforage | IndexedDB wrapper for binary state |
+| **State** | TanStack Query | Data fetching & synchronization |
+| **UI Library** | Shadcn UI | Component design system |
 
 ---
 
-## 🚀 Development & Build
+## ⚙️ How It Works: Visual Deep Dive
+
+The application manages data through three distinct phases: **Initialization**, **Operation**, and **Persistence**.
+
+### 1. Initialization Cycle
+When the app starts, it restores the database from the browser's storage.
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant LF as LocalForage (IndexedDB)
+    participant S as sqlite-setup.ts
+    participant SQL as sql.js (WASM)
+    
+    B->>S: App Mount
+    S->>LF: getItem('ledger_tracker.db')
+    LF-->>S: Binary Data (Uint8Array)
+    S->>SQL: new SQL.Database(Binary Data)
+    SQL-->>S: Ready Instance
+    S-->>B: Database Connected
+```
+
+### 2. The Operation & Persistence Loop
+Every time you add or edit a transaction, the app ensures the change is saved permanently.
+
+```mermaid
+flowchart LR
+    A[User Input] --> B(React Hook)
+    B --> C{Run SQL Query}
+    C --> D[Update Memory]
+    D --> E[Export Database]
+    E --> F[Save to IndexedDB]
+    F --> G[Invalidate Cache]
+    G --> H[UI Refresh]
+```
+
+### 3. Data Isolation (Security)
+Even though the database is local, it uses a relational structure to ensure user data remains separated.
+
+| Step | Action | Logic |
+| :--- | :--- | :--- |
+| **1** | **Identify** | Retrieve `user_id` from local session. |
+| **2** | **Query** | `SELECT * FROM transactions WHERE user_id = ?` |
+| **3** | **Enforce** | SQL constraints prevent unauthorized access to other profiles. |
+
+---
+
+## 🚀 Getting Started
 
 ### 1. Installation
-Ensure you have Node.js (v18+) and `pnpm` installed.
 ```bash
 pnpm install
 ```
 
-### 2. Development Mode
-Starts the Vite dev server with Hot Module Replacement.
+### 2. Development
 ```bash
 pnpm dev
 ```
-By default, the app will be available at `http://localhost:8080`.
+Access the application at `http://localhost:8080`.
 
 ### 3. Production Build
-Optimize the application for deployment.
 ```bash
 pnpm build
-```
-
-### 4. Production Preview
-Run the optimized build locally.
-```bash
 pnpm start
 ```
 
 ---
 
-## 📂 Features & Functionality
+## 📂 Project Structure
 
-### 🔐 Relational Data Security
-- **Isolated Profiles**: Every user has a unique ID. Transactions, budgets, and settings are filtered strictly by the logged-in session.
-- **No External Servers**: Your financial data never leaves your device. It stays in your browser's private IndexedDB.
-
-### 📊 Real-time Analytics
-- **Dynamic Charts**: Interactive "Spending Trends" (Area Chart) and "Category Breakdown" (Pie Chart).
-- **Smart Stats**: Automatic calculation of savings rates and monthly comparisons.
-
-### 📁 Data Portability
-- **Export**: Download your entire SQLite database state as a portable JSON file.
-- **Import**: Restore your financial history from a backup file instantly.
-- **Clear Data**: One-click reset for a fresh start.
-
----
-
-## 💡 How it Works (Under the Hood)
-
-### The SQLite Engine
-The app loads a 600KB WebAssembly file (`sql-wasm.wasm`) into the browser. This file is the entire SQLite engine. We use a custom `getDb()` singleton to ensure only one instance of the database exists at a time.
-
-### Data Persistence
-Since `sql.js` is in-memory only, we hook into every database write operation. After a record is inserted or updated, we call `db.export()`, which returns a binary buffer. We save this buffer to IndexedDB under the key `ledger_tracker.db`. On the next visit, we load this buffer back into `sql.js`.
-
-### The SQL Schema
-We maintain a full relational schema defined in [schema.sql](file:///home/dev/ledger-tracker/schema.sql). This allows for efficient joins and complex aggregations that wouldn't be possible with simple `localStorage`.
+```text
+src/
+├── components/
+│   ├── auth/           # Auth logic & ProtectedRoute
+│   ├── dashboard/      # Stat cards & charts
+│   ├── layout/         # Navigation & MainLayout
+│   ├── transactions/   # Dialogs & details
+│   └── ui/             # Shadcn base components
+├── db/
+│   ├── index.ts        # Exports & Types
+│   └── sqlite-setup.ts # WASM initialization & persistence
+├── hooks/              # CRUD hooks (useTransactions)
+├── pages/              # App screens (Dashboard, Ledger, etc.)
+└── schema.sql          # Relational database documentation
+```
 
 ---
 
-## 🤝 Contributing
-Forks are welcome! If you'd like to extend the functionality (e.g., adding multi-currency support or custom categories), check out `src/hooks/useTransactions.ts` as the primary entry point for database logic.
-
----
-
-## 📄 License
-This project is open-source and available under the MIT License.
+## 📜 License
+This project is licensed under the Apache License 2.0. See the [LICENSE](file:///home/dev/ledger-tracker/LICENSE) file for details.
