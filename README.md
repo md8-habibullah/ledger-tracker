@@ -6,7 +6,7 @@ A security-first, local-only financial vault application. All data remains encry
 
 ---
 
-## 🔐 The Philosophy
+## The Philosophy
 
 **Zero Servers. Zero Tracking. 100% Local Ownership.**
 
@@ -20,7 +20,7 @@ This architecture represents a fundamental shift in how financial applications s
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Data Flow Visualization
 
@@ -63,7 +63,7 @@ This architecture represents a fundamental shift in how financial applications s
 
 ---
 
-## 📊 Application Overview
+## Application Overview
 
 ### 1. Vault Initialization & Lock Screen
 - **Route**: `/landing` → `/login`
@@ -103,7 +103,7 @@ This architecture represents a fundamental shift in how financial applications s
 
 ---
 
-## 🛠️ Technical Stack
+## Technical Stack
 
 | Component | Technology | Purpose |
 | :--- | :--- | :--- |
@@ -120,7 +120,7 @@ This architecture represents a fundamental shift in how financial applications s
 
 ---
 
-## ⚡ Core Features
+## Core Features
 
 ### 1. **Auto-Lock Engine**
 - Configurable inactivity timer (5, 8, 10, 15, 30, 60 minutes, or disabled)
@@ -155,7 +155,7 @@ This architecture represents a fundamental shift in how financial applications s
 
 ---
 
-## 🔬 Database Architecture
+## Database Architecture
 
 The schema includes 4 core tables with 3 intelligent triggers:
 
@@ -174,7 +174,7 @@ See `schema.sql` for complete trigger definitions and performance indexes.
 
 ---
 
-## 📈 Data Flow Architecture
+## Data Flow Architecture
 
 ### Initialization (App Load)
 ```
@@ -237,7 +237,7 @@ User must re-authenticate
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Node.js 18+ (with pnpm 8+)
@@ -266,7 +266,7 @@ The static build will be in `dist/`. Deploy to any static hosting (Vercel, Netli
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ledger-tracker/
@@ -297,7 +297,7 @@ ledger-tracker/
 
 ---
 
-## 🔒 Security Model
+## Security Model
 
 ### Data at Rest
 - Binary SQLite database exported from sql.js
@@ -330,12 +330,12 @@ This app does NOT protect against:
 
 ---
 
-## 📜 License
+## License
 MIT License. See [LICENSE](./LICENSE) file for details.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 Security-first contributions welcome. Please review the architecture documentation before submitting PRs.
 
 ---
