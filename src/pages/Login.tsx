@@ -31,8 +31,8 @@ const Login: React.FC = () => {
     
     if (success) {
       toast({
-        title: "Welcome back!",
-        description: "Successfully logged in to your account.",
+        title: "Vault unlocked!",
+        description: "Successfully unlocked your vault.",
       });
       navigate(from, { replace: true });
     } else {
@@ -52,8 +52,8 @@ const Login: React.FC = () => {
     
     if (success) {
       toast({
-        title: "Account created!",
-        description: "Your account has been successfully created.",
+        title: "Vault created!",
+        description: "Your encrypted vault has been created.",
       });
       navigate(from, { replace: true });
     } else {

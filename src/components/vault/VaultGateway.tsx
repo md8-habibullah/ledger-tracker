@@ -1,26 +1,46 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/components/auth/AuthContext";
 
 interface VaultGatewayProps {
   children: React.ReactNode;
 }
 
 /**
- * VaultGateway component that checks if the vault has been initialized.
- * If not, redirects to the landing page. Otherwise, renders the children.
+ * VaultGateway component that enforces the vault routing state machine:
+ * 1. If vault not initialized: redirect to /landing
+ * 2. If vault locked (isLocked = true): redirect to /login
+ * 3. If vault unlocked: allow access to protected routes
  */
 export const VaultGateway = ({ children }: VaultGatewayProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { vaultInitialized, isLocked, isLoading } = useAuth();
 
   useEffect(() => {
-    const vaultInitialized = localStorage.getItem("vault_initialized");
+    if (isLoading) return;
 
-    // If vault is not initialized and user is not on landing page, redirect to landing
-    if (!vaultInitialized && location.pathname !== "/landing") {
-      navigate("/landing", { replace: true });
+    const currentPath = location.pathname;
+
+    // Allow landing page and login page to be accessed without restrictions
+    if (currentPath === "/landing" || currentPath === "/login") {
+      return;
     }
-  }, [navigate, location.pathname]);
+
+    // If vault is not initialized, redirect to landing
+    if (!vaultInitialized) {
+      navigate("/landing", { replace: true });
+      return;
+    }
+
+    // If vault is locked, redirect to login
+    if (isLocked) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    // All checks passed - allow access to the requested route
+  }, [navigate, location.pathname, vaultInitialized, isLocked, isLoading]);
 
   return <>{children}</>;
 };

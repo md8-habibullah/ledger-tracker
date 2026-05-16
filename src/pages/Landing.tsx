@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Lock, Eye, Zap, Shield, HelpCircle, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { initializeVault } = useAuth();
 
   const handleGetStarted = () => {
-    localStorage.setItem("vault_initialized", "true");
-    navigate("/");
+    initializeVault();
+    navigate("/login");
   };
 
   return (
