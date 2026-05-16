@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Budget } from '@/db';
+import { type Budget } from '@/db';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useTransactions } from '@/hooks/useTransactions';
 import { Button } from '@/components/ui/button';
@@ -27,8 +26,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const Budgets = () => {
-  const { categories, stats } = useTransactions();
-  const budgets = useLiveQuery(() => db.budgets.toArray()) ?? [];
+  const { categories, stats, budgets, addBudget, updateBudget, deleteBudget } = useTransactions();
   
   const [open, setOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
@@ -59,18 +57,20 @@ const Budgets = () => {
       category,
       amount: parseFloat(amount),
       period,
-      createdAt: new Date(),
     };
 
-    if (editingBudget) {
-      await db.budgets.update(editingBudget.id!, budgetData);
-      toast.success('Budget updated');
-    } else {
-      await db.budgets.add(budgetData);
-      toast.success('Budget created');
+    try {
+      if (editingBudget) {
+        await updateBudget(editingBudget.id!, budgetData);
+        toast.success('Budget updated');
+      } else {
+        await addBudget(budgetData);
+        toast.success('Budget created');
+      }
+      resetForm();
+    } catch (error) {
+      toast.error('Failed to save budget');
     }
-
-    resetForm();
   };
 
   const resetForm = () => {
@@ -90,8 +90,12 @@ const Budgets = () => {
   };
 
   const handleDelete = async (id: number) => {
-    await db.budgets.delete(id);
-    toast.success('Budget deleted');
+    try {
+      await deleteBudget(id);
+      toast.success('Budget deleted');
+    } catch (error) {
+      toast.error('Failed to delete budget');
+    }
   };
 
   const getBudgetProgress = (budget: Budget) => {

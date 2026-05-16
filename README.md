@@ -1,101 +1,144 @@
-# Ledger Tracker
+# LedgerTracker: Serverless SQLite Finance Manager
 
-[![Framework](https://img.shields.io/badge/Framework-React_18-blue?style=flat-square&logo=react)](https://reactjs.org/)
-[![Build Tool](https://img.shields.io/badge/Build_Tool-Vite-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
-[![Database](<https://img.shields.io/badge/Database-IndexedDB_(Dexie)-333333?style=flat-square&logo=icloud>)](https://dexie.org/)
-[![Language](https://img.shields.io/badge/Language-TypeScript-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Styling](https://img.shields.io/badge/Styling-Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-
-**Ledger Tracker** is a secure, offline-first personal finance tracker designed to help users take full control of their financial journey with a privacy-focused approach. Built specifically with modern web technologies, it provides a seamless experience for tracking income, expenses, and budgets without ever sending your sensitive data to a server.
+A high-performance expense tracking application built with React, Vite, TypeScript, Tailwind CSS, and Shadcn UI. It uses a serverless backend with sql.js (SQLite in the browser) and persistent storage via localforage.
 
 ---
 
-## Screenshots
+## 🖼️ Application Overview
 
-|              Dashboard Overview               |              Fully Customizable               |
-| :-------------------------------------------: | :-------------------------------------------: |
-| ![Dashboard Overview](/public/s-overview.png) | ![Fully Customizable](/public/s-settings.png) |
+### 1. Secure Authentication
+- **Route**: `/login`
+- **Functionality**: Toggle between login and registration. Data is isolated per user using a relational schema.
+- **Features**: Glassmorphism UI, smooth transitions, and persistent sessions.
 
-|             Filter & Sort              |             Founder - Developer             |
-| :------------------------------------: | :-----------------------------------------: |
-| ![Filter & Sort](/public/s-ledger.png) | ![Founder - Developer](/public/s-about.png) |
+### 2. Financial Dashboard
+- **Route**: `/`
+- **Functionality**: Centralized overview of balance, income, expenses, and savings rate.
+- **Quick Entry**: Fast transaction logging for both income and expenses.
 
----
+### 3. Transaction Ledger
+- **Route**: `/ledger`
+- **Functionality**: Complete searchable list of all transactions with filtering and bulk actions.
+- **Actions**: Edit, delete, and detailed view for every record.
 
-## Key Features
-
-- **Privacy First:** Your financial data stays exclusively on your device. We use **IndexedDB** technology to ensure records are secure and accessible even without an internet connection.
-- **Comprehensive Dashboard:** Get an immediate overview of your Total Balance, Monthly Income, Expenses, and Savings Rate.
-- **Quick Transaction Entry:** Effortlessly add new income or expenses with a streamlined interface.
-- **Visual Analytics:** Understand your spending habits through interactive **Spending Trends** and **Category Breakdown** charts.
-- **Intelligent Ledger:** View, edit, and manage your entire transaction history with ease.
-- **Budget Management:** Set and track financial goals across different categories and periods (Weekly, Monthly, Yearly).
-- **Halal-Friendly Design:** Includes a thoughtful set of default categories with positive, Halal-friendly icons like "Charity", "Education", and "Family".
-
----
-
-## Tech Stack
-
-- **Frontend:** React 18 with TypeScript.
-- **State Management:** TanStack React Query (v5).
-- **Database:** Dexie.js (IndexedDB wrapper) for robust offline storage.
-- **Styling:** Tailwind CSS with Shadcn/UI components.
-- **Icons:** Lucide React.
-- **Charts:** Recharts for data visualization.
-- **Form Handling:** React Hook Form & Zod for schema validation.
-- **Animations:** Framer Motion for smooth UI transitions.
+### 4. Budget Management
+- **Route**: `/budgets`
+- **Functionality**: Category-specific budget limits with real-time progress visualization.
 
 ---
 
-## Getting Started
+## 🏗️ System Architecture
 
-### Prerequisites
+The application operates entirely on the client-side, using WebAssembly to run a full SQL engine in the browser.
 
-- [Node.js](https://nodejs.org/) (Latest LTS recommended)
-- [Bun](https://bun.sh/) or [pnpm](https://pnpm.io/) / [npm](https://www.npmjs.com/)
+```mermaid
+graph TD
+    UI[React Components] -->|Mutations| Hooks[React Query Hooks]
+    Hooks -->|SQL| SQL[sql.js Engine]
+    SQL -->|Binary Export| Persistence[localforage]
+    Persistence -->|Storage| DB[(ledger_tracker.db)]
+    DB -->|Initialization| SQL
+    Hooks -->|Data| UI
+```
 
-### Installation
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone [https://github.com/md8-habibullah/pocket-ledger-bd.git](https://github.com/md8-habibullah/pocket-ledger-bd.git)
-    cd pocket-ledger-bd
-    ```
-
-2.  **Install dependencies:**
-
-    ```bash
-    bun install
-    # OR
-    pnpm install
-    # OR
-    npm install
-    ```
-
-3.  **Start the development server:**
-
-    ```bash
-    bun dev
-    ```
-
-4.  **Build for production:**
-    ```bash
-    bun run build
-    ```
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **Framework** | React 18 | UI Layer |
+| **Build Tool** | Vite | Bundling & Dev Server |
+| **Database** | sql.js | In-browser SQL Engine (WASM) |
+| **Persistence** | localforage | IndexedDB wrapper for binary state |
+| **State** | TanStack Query | Data fetching & synchronization |
+| **UI Library** | Shadcn UI | Component design system |
 
 ---
 
-## Project Structure
+## ⚙️ How It Works: Visual Deep Dive
+
+The application manages data through three distinct phases: **Initialization**, **Operation**, and **Persistence**.
+
+### 1. Initialization Cycle
+When the app starts, it restores the database from the browser's storage.
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant LF as LocalForage (IndexedDB)
+    participant S as sqlite-setup.ts
+    participant SQL as sql.js (WASM)
+    
+    B->>S: App Mount
+    S->>LF: getItem('ledger_tracker.db')
+    LF-->>S: Binary Data (Uint8Array)
+    S->>SQL: new SQL.Database(Binary Data)
+    SQL-->>S: Ready Instance
+    S-->>B: Database Connected
+```
+
+### 2. The Operation & Persistence Loop
+Every time you add or edit a transaction, the app ensures the change is saved permanently.
+
+```mermaid
+flowchart LR
+    A[User Input] --> B(React Hook)
+    B --> C{Run SQL Query}
+    C --> D[Update Memory]
+    D --> E[Export Database]
+    E --> F[Save to IndexedDB]
+    F --> G[Invalidate Cache]
+    G --> H[UI Refresh]
+```
+
+### 3. Data Isolation (Security)
+Even though the database is local, it uses a relational structure to ensure user data remains separated.
+
+| Step | Action | Logic |
+| :--- | :--- | :--- |
+| **1** | **Identify** | Retrieve `user_id` from local session. |
+| **2** | **Query** | `SELECT * FROM transactions WHERE user_id = ?` |
+| **3** | **Enforce** | SQL constraints prevent unauthorized access to other profiles. |
+
+---
+
+## 🚀 Getting Started
+
+### 1. Installation
+```bash
+pnpm install
+```
+
+### 2. Development
+```bash
+pnpm dev
+```
+Access the application at `http://localhost:8080`.
+
+### 3. Production Build
+```bash
+pnpm build
+pnpm start
+```
+
+---
+
+## 📂 Project Structure
 
 ```text
 src/
-├── components/       # Reusable UI components (Shadcn/UI)
-│   ├── dashboard/    # Cards and Charts
-│   ├── layout/       # Sidebar and Main Wrappers
-│   └── transactions/ # Dialogs and Ledger components
-├── db/               # Dexie Database configuration and schemas
-├── hooks/            # Custom React hooks (Transactions, Currency, Theme)
-├── lib/              # Utility functions
-└── pages/            # Main application views (Index, Ledger, Budgets, About)
+├── components/
+│   ├── auth/           # Auth logic & ProtectedRoute
+│   ├── dashboard/      # Stat cards & charts
+│   ├── layout/         # Navigation & MainLayout
+│   ├── transactions/   # Dialogs & details
+│   └── ui/             # Shadcn base components
+├── db/
+│   ├── index.ts        # Exports & Types
+│   └── sqlite-setup.ts # WASM initialization & persistence
+├── hooks/              # CRUD hooks (useTransactions)
+├── pages/              # App screens (Dashboard, Ledger, etc.)
+└── schema.sql          # Relational database documentation
 ```
+
+---
+
+## 📜 License
+This project is licensed under the Apache License 2.0. See the [LICENSE](file:///home/dev/ledger-tracker/LICENSE) file for details.
