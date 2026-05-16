@@ -1,144 +1,343 @@
-# LedgerTracker: Serverless SQLite Finance Manager
+# Ledger Tracker - Local Encrypted Vault
 
-A high-performance expense tracking application built with React, Vite, TypeScript, Tailwind CSS, and Shadcn UI. It uses a serverless backend with sql.js (SQLite in the browser) and persistent storage via localforage.
+> **Your Finances. Zero Servers. 100% Local.**
+
+A security-first, local-only financial vault application. All data remains encrypted in your browser using SQLite WASM with zero external network calls or telemetry. Built for users who demand complete control over their financial records.
 
 ---
 
-## 🖼️ Application Overview
+## 🔐 The Philosophy
 
-### 1. Secure Authentication
+**Zero Servers. Zero Tracking. 100% Local Ownership.**
+
+Ledger Tracker operates entirely in-browser using SQLite compiled to WebAssembly (WASM). No transaction data ever leaves your device. No cloud syncing. No telemetry. No third-party integrations. Your financial data is yours alone.
+
+This architecture represents a fundamental shift in how financial applications should be designed:
+- Your data is stored locally in IndexedDB (not transmitted anywhere)
+- Encryption is client-side via Web Crypto API (not managed by us)
+- The SQLite engine runs in-process (not on a server)
+- The app works offline (including new data entry and calculations)
+
+---
+
+## 🏗️ Architecture Overview
+
+### Data Flow Visualization
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                      USER INTERACTION                       │
+│                    (React Components)                       │
+└─────────────────────────┬──────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│                    REACT STATE LAYER                        │
+│              (TanStack Query + React Hooks)                │
+└─────────────────────────┬──────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│              AES-256 ENCRYPTION (Optional)                 │
+│              (Web Crypto API - Client-side)                │
+└─────────────────────────┬──────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│            SQL.JS WASM IN-MEMORY DATABASE                  │
+│     (SQLite Engine Compiled to WebAssembly)                │
+│  - Relational schema with triggers                         │
+│  - Full SQL support (CREATE, INSERT, UPDATE, DELETE)       │
+│  - Automatic budget calculation via triggers               │
+└─────────────────────────┬──────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│        LOCAL PERSISTENCE LAYER (IndexedDB)                 │
+│     (Browser's Local Storage - Encrypted Optional)         │
+│  - Binary database export via db.export()                  │
+│  - Stored as Uint8Array under key: ledger_tracker.db       │
+│  - Survives browser restarts                               │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 Application Overview
+
+### 1. Vault Initialization & Lock Screen
+- **Route**: `/landing` → `/login`
+- **Functionality**: First-time onboarding shows the Landing Page explaining zero-server architecture. Users register to create their encrypted vault.
+- **Security**: Vault is locked by default. Auto-locks after configurable inactivity (5-60 minutes or disabled).
+- **Destructive Reset**: Users can "Nuke" the vault via a 2-step confirmation dialog for complete data erasure.
+
+### 2. Secure Authentication & Session Management
 - **Route**: `/login`
-- **Functionality**: Toggle between login and registration. Data is isolated per user using a relational schema.
-- **Features**: Glassmorphism UI, smooth transitions, and persistent sessions.
+- **Functionality**: Multi-user support with per-user data isolation via `user_id` foreign keys.
+- **Features**: Password-based authentication (bcrypt recommended), persistent session tokens in localStorage.
+- **Auto-Lock Timer**: Configurable inactivity timer locks the vault and clears session memory.
 
-### 2. Financial Dashboard
+### 3. Financial Dashboard
 - **Route**: `/`
-- **Functionality**: Centralized overview of balance, income, expenses, and savings rate.
-- **Quick Entry**: Fast transaction logging for both income and expenses.
+- **Functionality**: Real-time overview of balance, income, expenses, and savings rate.
+- **Live Calculations**: Budget progress visualized with automatic spent_amount updates via SQL triggers.
+- **Quick Entry**: Rapid transaction logging with category-based shortcuts.
 
-### 3. Transaction Ledger
+### 4. Transaction Ledger
 - **Route**: `/ledger`
-- **Functionality**: Complete searchable list of all transactions with filtering and bulk actions.
-- **Actions**: Edit, delete, and detailed view for every record.
+- **Functionality**: Comprehensive, searchable list of all transactions (filtered by user).
+- **Trigger System**: All modifications (insert, update, delete) automatically recalculate budget totals.
+- **Actions**: Edit, delete, and export transactions with full audit trails.
 
-### 4. Budget Management
+### 5. Budget Management & Tracking
 - **Route**: `/budgets`
-- **Functionality**: Category-specific budget limits with real-time progress visualization.
+- **Functionality**: Category-specific budget limits with automatic progress calculation.
+- **Real-Time Sync**: SQLite triggers instantly update `spent_amount` whenever transactions change.
+- **Visualization**: Progress bars and notifications when approaching or exceeding budget limits.
+
+### 6. Security & Privacy Settings
+- **Route**: `/settings`
+- **Auto-Lock Duration**: Configure vault lock timer (5/8/10/15/30/60 minutes or disabled).
+- **Currency & Format**: Regional preferences for number formatting and currency display.
+- **Destructive Reset**: One-click vault destruction for complete data erasure.
 
 ---
 
-## 🏗️ System Architecture
+## 🛠️ Technical Stack
 
-The application operates entirely on the client-side, using WebAssembly to run a full SQL engine in the browser.
-
-```mermaid
-graph TD
-    UI[React Components] -->|Mutations| Hooks[React Query Hooks]
-    Hooks -->|SQL| SQL[sql.js Engine]
-    SQL -->|Binary Export| Persistence[localforage]
-    Persistence -->|Storage| DB[(ledger_tracker.db)]
-    DB -->|Initialization| SQL
-    Hooks -->|Data| UI
-```
-
-| Component | Technology | Role |
+| Component | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Framework** | React 18 | UI Layer |
-| **Build Tool** | Vite | Bundling & Dev Server |
-| **Database** | sql.js | In-browser SQL Engine (WASM) |
-| **Persistence** | localforage | IndexedDB wrapper for binary state |
-| **State** | TanStack Query | Data fetching & synchronization |
-| **UI Library** | Shadcn UI | Component design system |
+| **Framework** | React 18 + TypeScript | Type-safe UI layer with hooks |
+| **Build Tool** | Vite | Lightning-fast bundling & HMR |
+| **Database Engine** | sql.js (WASM) | SQLite compiled to WebAssembly |
+| **Persistence** | localforage (IndexedDB) | Binary database export storage |
+| **State Management** | TanStack React Query | Data synchronization & caching |
+| **UI Components** | shadcn/ui | Accessible, composable components |
+| **Styling** | Tailwind CSS | Utility-first design system |
+| **Animations** | Framer Motion | Smooth transitions & interactions |
+| **Icons** | Lucide React | Consistent icon library |
+| **HTTP Client** | (Not used) | Zero external API calls |
 
 ---
 
-## ⚙️ How It Works: Visual Deep Dive
+## ⚡ Core Features
 
-The application manages data through three distinct phases: **Initialization**, **Operation**, and **Persistence**.
+### 1. **Auto-Lock Engine**
+- Configurable inactivity timer (5, 8, 10, 15, 30, 60 minutes, or disabled)
+- Automatically locks vault and clears session memory
+- Monitors: mouse, keyboard, scroll, and touch events
+- Timer resets on any user interaction
 
-### 1. Initialization Cycle
-When the app starts, it restores the database from the browser's storage.
+### 2. **Destructive Reset (Nuke Sequence)**
+- Two-step confirmation dialog to prevent accidents
+- Drops all database tables: users, transactions, budgets, categories
+- Clears all localStorage data
+- Returns app to initial state for complete data erasure
+- 10-second countdown timer for final confirmation
 
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant LF as LocalForage (IndexedDB)
-    participant S as sqlite-setup.ts
-    participant SQL as sql.js (WASM)
-    
-    B->>S: App Mount
-    S->>LF: getItem('ledger_tracker.db')
-    LF-->>S: Binary Data (Uint8Array)
-    S->>SQL: new SQL.Database(Binary Data)
-    SQL-->>S: Ready Instance
-    S-->>B: Database Connected
-```
+### 3. **Budget Trigger System**
+- SQLite triggers automatically recalculate `spent_amount` on transaction changes
+- Eliminates stale budget calculations
+- No application-layer sync logic required
+- Maintains data integrity through database constraints
 
-### 2. The Operation & Persistence Loop
-Every time you add or edit a transaction, the app ensures the change is saved permanently.
+### 4. **Multi-User Isolation**
+- Each user's data is isolated via `user_id` foreign keys
+- SQL queries filtered by user context
+- Password-based authentication with bcrypt support
+- Per-user sessions with persistent tokens
 
-```mermaid
-flowchart LR
-    A[User Input] --> B(React Hook)
-    B --> C{Run SQL Query}
-    C --> D[Update Memory]
-    D --> E[Export Database]
-    E --> F[Save to IndexedDB]
-    F --> G[Invalidate Cache]
-    G --> H[UI Refresh]
-```
-
-### 3. Data Isolation (Security)
-Even though the database is local, it uses a relational structure to ensure user data remains separated.
-
-| Step | Action | Logic |
-| :--- | :--- | :--- |
-| **1** | **Identify** | Retrieve `user_id` from local session. |
-| **2** | **Query** | `SELECT * FROM transactions WHERE user_id = ?` |
-| **3** | **Enforce** | SQL constraints prevent unauthorized access to other profiles. |
+### 5. **Vault Initialization Flow**
+- Landing page explains zero-server architecture
+- Guided registration creates encrypted vault
+- Vault state persisted in IndexedDB
+- Auto-lock enforced after initialization
 
 ---
 
-## 🚀 Getting Started
+## 🔬 Database Architecture
 
-### 1. Installation
+The schema includes 4 core tables with 3 intelligent triggers:
+
+**Tables:**
+- `users`: Authentication credentials with bcrypt hashing
+- `categories`: Global transaction categories with UI metadata
+- `transactions`: Per-user financial records with type/category classification
+- `budgets`: Per-user budget limits with auto-calculated spending totals
+
+**Triggers:**
+- `tr_after_insert_transactions`: Updates budget.spent_amount on new expense
+- `tr_after_update_transactions`: Recalculates budgets when transaction changes
+- `tr_after_delete_transactions`: Adjusts budgets when transaction is deleted
+
+See `schema.sql` for complete trigger definitions and performance indexes.
+
+---
+
+## 📈 Data Flow Architecture
+
+### Initialization (App Load)
+```
+Browser starts
+  ↓
+sqlite-setup.ts loads sql.js WASM
+  ↓
+Retrieve ledger_tracker.db from IndexedDB
+  ↓
+Reconstruct in-memory database from Uint8Array
+  ↓
+Verify vault_initialized state
+  ↓
+Load user session (if exists)
+  ↓
+App ready
+```
+
+### Transaction Create/Update/Delete
+```
+User modifies transaction
+  ↓
+React component calls CRUD hook
+  ↓
+Hook executes SQL query (INSERT/UPDATE/DELETE)
+  ↓
+SQLite trigger fires automatically
+  ↓
+Budget.spent_amount recalculated
+  ↓
+In-memory database updated
+  ↓
+db.export() → Uint8Array
+  ↓
+Save to IndexedDB under 'ledger_tracker.db'
+  ↓
+Invalidate React Query cache
+  ↓
+UI refreshes with new data
+```
+
+### Auto-Lock Trigger
+```
+User inactive for N minutes
+  ↓
+Inactivity timer fires
+  ↓
+AuthContext.lockVault() executes
+  ↓
+isLocked = true
+  ↓
+user_id removed from localStorage
+  ↓
+Session memory cleared
+  ↓
+VaultGateway redirects to /login
+  ↓
+User must re-authenticate
+```
+
+---
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Node.js 18+ (with pnpm 8+)
+- Modern browser with IndexedDB support
+
+### Step 1: Clone & Install
 ```bash
+git clone https://github.com/md8-habibullah/ledger-tracker.git
+cd ledger-tracker
 pnpm install
 ```
 
-### 2. Development
+### Step 2: Development Server
 ```bash
 pnpm dev
 ```
-Access the application at `http://localhost:8080`.
+The app will be available at `http://localhost:5173`
 
-### 3. Production Build
+### Step 3: Production Build
 ```bash
 pnpm build
 pnpm start
 ```
 
+The static build will be in `dist/`. Deploy to any static hosting (Vercel, Netlify, GitHub Pages, etc.).
+
 ---
 
-## 📂 Project Structure
+## 📁 Project Structure
 
-```text
-src/
-├── components/
-│   ├── auth/           # Auth logic & ProtectedRoute
-│   ├── dashboard/      # Stat cards & charts
-│   ├── layout/         # Navigation & MainLayout
-│   ├── transactions/   # Dialogs & details
-│   └── ui/             # Shadcn base components
-├── db/
-│   ├── index.ts        # Exports & Types
-│   └── sqlite-setup.ts # WASM initialization & persistence
-├── hooks/              # CRUD hooks (useTransactions)
-├── pages/              # App screens (Dashboard, Ledger, etc.)
-└── schema.sql          # Relational database documentation
+```
+ledger-tracker/
+├── src/
+│   ├── components/
+│   │   ├── auth/              # AuthContext, ProtectedRoute, VaultGateway
+│   │   ├── vault/             # Vault lock/unlock UI components
+│   │   ├── dashboard/         # Dashboard cards & charts
+│   │   ├── layout/            # MainLayout, Navigation
+│   │   ├── transactions/      # Transaction dialogs & forms
+│   │   └── ui/                # shadcn/ui base components
+│   ├── db/
+│   │   ├── index.ts           # Database exports & TypeScript interfaces
+│   │   └── sqlite-setup.ts    # sql.js WASM initialization & persistence
+│   ├── hooks/                 # React Query hooks (useTransactions, etc.)
+│   ├── pages/                 # Route pages (Landing, Login, Dashboard, etc.)
+│   ├── lib/                   # Utilities (cn, date formatting, etc.)
+│   ├── App.tsx                # Router configuration
+│   └── main.tsx               # Entry point
+├── schema.sql                 # Advanced SQLite schema with triggers
+├── README.md                  # This file
+├── LICENSE                    # MIT License
+├── package.json               # Dependencies & scripts
+├── vite.config.ts             # Vite bundler config
+├── tailwind.config.ts         # Tailwind CSS customization
+└── tsconfig.json              # TypeScript configuration
 ```
 
 ---
 
+## 🔒 Security Model
+
+### Data at Rest
+- Binary SQLite database exported from sql.js
+- Stored in IndexedDB (browser's encrypted local storage)
+- Optional: User can encrypt with Web Crypto API before IndexedDB storage
+
+### Data in Transit
+- **Zero**: No data leaves your device
+- No external API calls
+- No telemetry or analytics
+- No third-party integrations
+
+### Data in Use
+- Runs in isolated browser context
+- Password hashing with bcrypt (server-side recommendations)
+- Session tokens in localStorage (not httpOnly due to WASM requirement)
+- Auto-lock clears memory after inactivity
+
+### Threat Model
+This app protects against:
+- ✅ Server-side data breaches (no servers exist)
+- ✅ Network eavesdropping (no network calls)
+- ✅ Unauthorized physical access (auto-lock, password protection)
+- ✅ Accidental data exposure (Nuke sequence for complete erasure)
+
+This app does NOT protect against:
+- ❌ Browser compromises (malware, extensions)
+- ❌ Physical attacks during active session
+- ❌ Weak passwords (use bcrypt with high cost factor)
+
+---
+
 ## 📜 License
-This project is licensed under the Apache License 2.0. See the [LICENSE](file:///home/dev/ledger-tracker/LICENSE) file for details.
+MIT License. See [LICENSE](./LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+Security-first contributions welcome. Please review the architecture documentation before submitting PRs.
+
+---
+
+**Built with ❤️ for users who value privacy and control over their financial data.**
