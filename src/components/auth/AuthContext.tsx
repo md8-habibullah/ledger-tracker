@@ -1,16 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getDb, execQuery, type User } from '@/db';
 
+export type AutoLockDuration = 5 | 8 | 10 | 15 | 30 | 60 | 'never';
+
 interface AuthContextType {
   user: User | null;
   isLocked: boolean;
   vaultInitialized: boolean;
+  autoLockDuration: AutoLockDuration;
   login: (username: string, password: string) => Promise<boolean>;
   register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   lockVault: () => void;
   unlockVault: () => void;
   initializeVault: () => void;
+  setAutoLockDuration: (duration: AutoLockDuration) => void;
   isLoading: boolean;
 }
 
@@ -20,13 +24,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLocked, setIsLocked] = useState(true);
   const [vaultInitialized, setVaultInitialized] = useState(false);
+  const [autoLockDuration, setAutoLockDurationState] = useState<AutoLockDuration>(15);
   const [isLoading, setIsLoading] = useState(true);
+  const inactivityTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  // Initialize auth and load settings
   useEffect(() => {
     const initAuth = async () => {
       // Check if vault has been initialized
       const vaultInit = localStorage.getItem('vault_initialized');
       setVaultInitialized(vaultInit === 'true');
+
+      // Load auto-lock duration
+      const savedDuration = localStorage.getItem('auto_lock_duration');
+      if (savedDuration) {
+        const duration = savedDuration === 'never' 
+          ? 'never' 
+          : parseInt(savedDuration) as AutoLockDuration;
+        setAutoLockDurationState(duration);
+      }
 
       // Check for saved user session
       const savedUserId = localStorage.getItem('user_id');
@@ -55,6 +71,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initAuth();
   }, []);
+
+  // Auto-lock timer effect
+  useEffect(() => {
+    if (isLocked || autoLockDuration === 'never' || !user) {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+        inactivityTimerRef.current = null;
+      }
+      return;
+    }
+
+    const resetInactivityTimer = () => {
+      // Clear existing timer
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+
+      // Set new timer
+      const durationMs = autoLockDuration === 'never' ? Infinity : autoLockDuration * 60 * 1000;
+      inactivityTimerRef.current = setTimeout(() => {
+        lockVault();
+      }, durationMs);
+    };
+
+    // Reset timer on user activity
+    const handleActivity = () => {
+      resetInactivityTimer();
+    };
+
+    resetInactivityTimer();
+
+    // Track user activity
+    window.addEventListener('mousedown', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+
+    return () => {
+      window.removeEventListener('mousedown', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
+  }, [isLocked, autoLockDuration, user]);
 
   const login = async (username: string, password: string) => {
     const db = await getDb();
@@ -102,6 +166,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLocked(true);
     setUser(null);
     localStorage.removeItem('user_id');
+    // Clear sensitive data from memory
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
   };
 
   const unlockVault = () => {
@@ -113,17 +182,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setVaultInitialized(true);
   };
 
+  const setAutoLockDuration = (duration: AutoLockDuration) => {
+    setAutoLockDurationState(duration);
+    localStorage.setItem('auto_lock_duration', duration.toString());
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
       isLocked,
       vaultInitialized,
+      autoLockDuration,
       login, 
       register, 
       logout,
       lockVault,
       unlockVault,
       initializeVault,
+      setAutoLockDuration,
       isLoading 
     }}>
       {children}

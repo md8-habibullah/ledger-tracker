@@ -13,7 +13,8 @@ import {
   TreePine,
   Sunset,
   Globe,
-  LogOut
+  LogOut,
+  Clock
 } from 'lucide-react';
 import { getDb, saveDb, execQuery, type Transaction, type Category, type Budget } from '@/db';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -38,12 +39,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useTheme, ThemeId } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { useTransactions } from '@/hooks/useTransactions';
-import { useAuth } from '@/components/auth/AuthContext';
+import { useAuth, type AutoLockDuration } from '@/components/auth/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 
 const themeIcons: Record<ThemeId, React.ElementType> = {
@@ -56,7 +64,7 @@ const themeIcons: Record<ThemeId, React.ElementType> = {
 
 const Settings = () => {
   const { transactions, categories, budgets } = useTransactions();
-  const { user, logout } = useAuth();
+  const { user, logout, autoLockDuration, setAutoLockDuration } = useAuth();
   const queryClient = useQueryClient();
   
   const { 
@@ -67,6 +75,14 @@ const Settings = () => {
     setNumberFormat 
   } = useCurrency();
   const { currentTheme, setTheme, themes: themeList } = useTheme();
+
+  const handleAutoLockChange = (value: string) => {
+    const duration = value === 'never' ? 'never' : (parseInt(value) as AutoLockDuration);
+    setAutoLockDuration(duration);
+    
+    const durationText = duration === 'never' ? 'Auto-lock disabled' : `Auto-lock set to ${duration} minutes`;
+    toast.success(durationText);
+  };
 
   const handleExportData = async () => {
     const data = {
@@ -225,11 +241,57 @@ const Settings = () => {
           </Card>
         </motion.div>
 
-        {/* Data Stats */}
+        {/* Security Settings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+        >
+          <Card className="glass border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                Security Settings
+              </CardTitle>
+              <CardDescription>
+                Configure vault auto-lock behavior
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Label htmlFor="auto-lock-select" className="text-sm font-medium">
+                  Auto-Lock Vault Duration
+                </Label>
+                <Select 
+                  value={autoLockDuration === 'never' ? 'never' : autoLockDuration.toString()}
+                  onValueChange={handleAutoLockChange}
+                >
+                  <SelectTrigger id="auto-lock-select" className="w-full">
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent className="glass">
+                    <SelectItem value="5">5 Minutes</SelectItem>
+                    <SelectItem value="8">8 Minutes</SelectItem>
+                    <SelectItem value="10">10 Minutes</SelectItem>
+                    <SelectItem value="15">15 Minutes</SelectItem>
+                    <SelectItem value="30">30 Minutes</SelectItem>
+                    <SelectItem value="60">60 Minutes</SelectItem>
+                    <SelectItem value="never">Always Unlock (Disable Auto-Lock)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Your vault will automatically lock after {autoLockDuration === 'never' ? 'auto-lock is disabled' : `${autoLockDuration} minutes`} of inactivity.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Data Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
         >
           <Card className="glass border-border/50">
             <CardHeader>
@@ -264,7 +326,7 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.25 }}
         >
           <Card className="glass border-border/50">
             <CardHeader>
@@ -305,7 +367,7 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.3 }}
         >
           <Card className="glass border-border/50">
             <CardHeader>
@@ -356,7 +418,7 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.35 }}
         >
           <Card className="glass border-border/50">
             <CardHeader>
@@ -401,7 +463,7 @@ const Settings = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.45 }}
         >
           <Card className="glass border-destructive/30">
             <CardHeader>
@@ -449,7 +511,7 @@ const Settings = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.55 }}
         className="mt-6"
       >
         <Card className="glass border-border/50">
