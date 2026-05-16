@@ -46,12 +46,6 @@ const Landing = () => {
         </svg>
       </div>
 
-      {/* Glow Effects */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-40 right-1/3 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-pulse"></div>
-        <div className="absolute bottom-40 left-1/4 w-96 h-96 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl opacity-5 animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
-
       <div className="relative z-10">
         {/* Navigation Header */}
         <header className="border-b border-slate-800/50 backdrop-blur-sm bg-slate-950/50">

@@ -23,10 +23,6 @@ export function MainLayout({ children }: MainLayoutProps) {
         style={{ backgroundSize: '50px 50px' }}
       />
 
-      {/* Gradient orbs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-[100px] pointer-events-none" />
-
       {/* Desktop Sidebar */}
       <Sidebar />
 
