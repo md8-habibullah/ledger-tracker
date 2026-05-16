@@ -156,7 +156,7 @@ export const themes: Theme[] = [
   },
 ];
 
-const THEME_STORAGE_KEY = 'LedgerTracker-theme';
+const THEME_STORAGE_KEY = 'Ledger Tracker-theme';
 
 export function useTheme() {
   const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
@@ -169,7 +169,7 @@ export function useTheme() {
     if (!theme) return;
 
     const root = document.documentElement;
-    
+
     Object.entries(theme.colors).forEach(([key, value]) => {
       const cssVar = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
       root.style.setProperty(cssVar, value);

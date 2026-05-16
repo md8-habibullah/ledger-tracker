@@ -18,8 +18,8 @@ export const currencies: Currency[] = [
   { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit', locale: 'ms-MY' },
 ];
 
-const CURRENCY_STORAGE_KEY = 'LedgerTracker-currency';
-const FORMAT_STORAGE_KEY = 'LedgerTracker-number-format'; // New storage key
+const CURRENCY_STORAGE_KEY = 'Ledger Tracker-currency';
+const FORMAT_STORAGE_KEY = 'Ledger Tracker-number-format'; // New storage key
 
 export function useCurrency() {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(() => {
@@ -53,7 +53,7 @@ export function useCurrency() {
   const formatCurrency = useCallback((value: number) => {
     // International uses 'en-US' locale for 0-9 digits, Local uses the currency's specific locale
     const locale = numberFormat === 'international' ? 'en-US' : currentCurrency.locale;
-    
+
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currentCurrency.code,

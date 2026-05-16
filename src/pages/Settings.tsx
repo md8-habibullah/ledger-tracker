@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Trash2, 
-  Download, 
-  Upload, 
+import {
+  Trash2,
+  Download,
+  Upload,
   AlertTriangle,
   Palette,
   Shield,
@@ -66,20 +66,20 @@ const Settings = () => {
   const { transactions, categories, budgets } = useTransactions();
   const { user, logout, autoLockDuration, setAutoLockDuration } = useAuth();
   const queryClient = useQueryClient();
-  
-  const { 
-    currency, 
-    setCurrency, 
+
+  const {
+    currency,
+    setCurrency,
     currencies: currencyList,
-    numberFormat, 
-    setNumberFormat 
+    numberFormat,
+    setNumberFormat
   } = useCurrency();
   const { currentTheme, setTheme, themes: themeList } = useTheme();
 
   const handleAutoLockChange = (value: string) => {
     const duration = value === 'never' ? 'never' : (parseInt(value) as AutoLockDuration);
     setAutoLockDuration(duration);
-    
+
     const durationText = duration === 'never' ? 'Auto-lock disabled' : `Auto-lock set to ${duration} minutes`;
     toast.success(durationText);
   };
@@ -91,19 +91,19 @@ const Settings = () => {
       budgets,
       exportedAt: new Date().toISOString(),
       appVersion: '1.0.0',
-      appName: 'LedgerTracker',
+      appName: 'Ledger Tracker',
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `LedgerTracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `Ledger Tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     toast.success('Data exported successfully!');
   };
 
@@ -262,7 +262,7 @@ const Settings = () => {
                 <Label htmlFor="auto-lock-select" className="text-sm font-medium">
                   Auto-Lock Vault Duration
                 </Label>
-                <Select 
+                <Select
                   value={autoLockDuration === 'never' ? 'never' : autoLockDuration.toString()}
                   onValueChange={handleAutoLockChange}
                 >
@@ -388,8 +388,8 @@ const Settings = () => {
                   }}
                   className={cn(
                     "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-                    numberFormat === 'international' 
-                      ? "bg-background shadow-sm text-primary" 
+                    numberFormat === 'international'
+                      ? "bg-background shadow-sm text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -402,8 +402,8 @@ const Settings = () => {
                   }}
                   className={cn(
                     "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-                    numberFormat === 'local' 
-                      ? "bg-background shadow-sm text-primary" 
+                    numberFormat === 'local'
+                      ? "bg-background shadow-sm text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -431,14 +431,14 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button 
+              <Button
                 onClick={handleExportData}
                 className="w-full bg-gradient-primary text-primary-foreground"
               >
                 <Download className="mr-2 h-4 w-4" />
                 Export My Data
               </Button>
-              
+
               <div className="relative">
                 <input
                   type="file"
@@ -487,13 +487,13 @@ const Settings = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete all your transactions and budgets. 
+                      This will permanently delete all your transactions and budgets.
                       Categories will be preserved. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogAction
                       onClick={handleClearAllData}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
@@ -528,8 +528,8 @@ const Settings = () => {
                   key={cat.id}
                   className="flex items-center gap-3 rounded-xl bg-muted/30 p-3"
                 >
-                  <div 
-                    className="h-4 w-4 rounded-full" 
+                  <div
+                    className="h-4 w-4 rounded-full"
                     style={{ backgroundColor: cat.color }}
                   />
                   <div className="flex-1 min-w-0">

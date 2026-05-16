@@ -22,7 +22,7 @@ export function StatCard({
   // Add the styles to the variants objects
   const variants = {
     default: 'bg-card border-border',
-    primary: 'glass neon-border',
+    primary: 'glass',
     secondary: 'bg-secondary/10 border-secondary/20',
     destructive: 'bg-destructive/10 border-destructive/20',
     // New variants using your tailwind colors
@@ -74,10 +74,6 @@ export function StatCard({
         </div>
       </div>
 
-      {/* Decorative gradient */}
-      {variant === 'primary' && (
-        <div className="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-      )}
     </motion.div>
   );
 }

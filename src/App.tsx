@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CustomCursor } from "@/components/ui/CustomCursor";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/auth/AuthContext";
@@ -24,7 +23,6 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <CustomCursor />
         <BrowserRouter>
           <VaultGateway>
             <Routes>

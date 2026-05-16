@@ -17,17 +17,11 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Background grid pattern */}
-      <div
-        className="fixed inset-0 bg-grid-pattern opacity-5 pointer-events-none"
-        style={{ backgroundSize: '50px 50px' }}
-      />
-
       {/* Desktop Sidebar */}
       <Sidebar />
 
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-background/80 backdrop-blur-md sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-border/50 bg-background sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
             <Wallet className="h-4 w-4 text-primary-foreground" />

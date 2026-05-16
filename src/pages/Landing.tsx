@@ -28,32 +28,15 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden font-mono">
-      {/* Subtle Grid Background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path
-                d="M 40 0 L 0 0 0 40"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1"
-                className="text-cyan-500"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-      </div>
 
       <div className="relative z-10">
         {/* Navigation Header */}
-        <header className="border-b border-slate-800/50 backdrop-blur-sm bg-slate-950/50">
+        <header className="border-b border-slate-800/50 bg-slate-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center gap-3">
               <Lock className="w-8 h-8 text-cyan-400" />
-              <h1 className="text-2xl font-bold text-cyan-400">LedgerTracker</h1>
-              <span className="ml-auto text-xs text-slate-500 font-mono">v1.0.0-local</span>
+              <h1 className="text-2xl font-bold text-cyan-400">Ledger Tracker</h1>
+              <span className="ml-auto text-xs text-slate-500 font-mono">100% Local & Secure</span>
             </div>
           </div>
         </header>
@@ -114,8 +97,6 @@ const Landing = () => {
                 {/* Center Icon with Glow */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative">
-                    {/* Glow Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 rounded-full blur-3xl"></div>
 
                     {/* Main Icon */}
                     <div className="relative bg-slate-900 border-2 border-cyan-500 rounded-full p-8 shadow-2xl shadow-cyan-500/50">
@@ -242,7 +223,7 @@ const Landing = () => {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Yes. LedgerTracker runs entirely in your browser with zero network connectivity. Your data never touches a server or the cloud. All encryption happens locally.
+                Yes. Ledger Tracker runs entirely in your browser with zero network connectivity. Your data never touches a server or the cloud. All encryption happens locally.
               </AccordionContent>
             </AccordionItem>
 
@@ -266,7 +247,7 @@ const Landing = () => {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Currently, LedgerTracker stores data locally on each device. Cross-device syncing is a planned feature for future releases while maintaining end-to-end encryption.
+                Currently, Ledger Tracker stores data locally on each device. Cross-device syncing is a planned feature for future releases while maintaining end-to-end encryption.
               </AccordionContent>
             </AccordionItem>
 
@@ -274,11 +255,11 @@ const Landing = () => {
               <AccordionTrigger className="hover:text-emerald-400 transition text-left">
                 <span className="flex items-center gap-2">
                   <HelpCircle className="w-5 h-5 text-emerald-400" />
-                  Is LedgerTracker free?
+                  Is Ledger Tracker free?
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Yes. LedgerTracker is completely free and open-source. No subscriptions, no premium tiers, no ads, no tracking. Your privacy is our commitment.
+                Yes. Ledger Tracker is completely free and open-source. No subscriptions, no premium tiers, no ads, no tracking. Your privacy is our commitment.
               </AccordionContent>
             </AccordionItem>
 
@@ -290,7 +271,7 @@ const Landing = () => {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                LedgerTracker uses industry-standard encryption protocols to secure your data. All encryption operations occur locally within the browser before storage in SQLite.
+                Ledger Tracker uses industry-standard encryption protocols to secure your data. All encryption operations occur locally within the browser before storage in SQLite.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -315,10 +296,10 @@ const Landing = () => {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-slate-800/50 backdrop-blur-sm bg-slate-950/50 mt-20">
+        <footer className="border-t border-slate-800/50 bg-slate-950 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center text-slate-500 font-mono text-sm">
-              <p>LedgerTracker • 100% Local • Military-Grade Encryption • Always Free</p>
+              <p>Ledger Tracker • 100% Local • Military-Grade Encryption • Always Free</p>
               <p className="mt-2 text-xs text-slate-600">
                 Built with privacy-first engineering principles
               </p>

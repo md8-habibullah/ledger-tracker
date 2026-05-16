@@ -37,7 +37,7 @@ const Login: React.FC = () => {
   const [nukeConfirmText, setNukeConfirmText] = useState('');
   const [showNukeCountdown, setShowNukeCountdown] = useState(false);
   const [countdownValue, setCountdownValue] = useState(10);
-  
+
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,7 +48,7 @@ const Login: React.FC = () => {
   // Countdown timer effect
   React.useEffect(() => {
     if (!showNukeCountdown) return;
-    
+
     if (countdownValue <= 0) {
       return;
     }
@@ -65,7 +65,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
     const success = await login(loginUsername, loginPassword);
     setIsLoading(false);
-    
+
     if (success) {
       toast({
         title: "Vault unlocked!",
@@ -86,7 +86,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
     const success = await register(regUsername, regPassword);
     setIsLoading(false);
-    
+
     if (success) {
       toast({
         title: "Vault created!",
@@ -120,7 +120,7 @@ const Login: React.FC = () => {
   const handleNukeStep2Confirm = async () => {
     try {
       const db = await getDb();
-      
+
       // Drop all tables
       const tables = ['transactions', 'categories', 'budgets', 'users'];
       for (const table of tables) {
@@ -130,17 +130,17 @@ const Login: React.FC = () => {
           // Table might not exist, continue
         }
       }
-      
+
       await saveDb();
-      
+
       // Clear all localStorage
       localStorage.clear();
-      
+
       toast({
         title: "Vault destroyed",
         description: "All data has been permanently deleted. Redirecting to initialization...",
       });
-      
+
       // Reset state and redirect
       setTimeout(() => {
         navigate('/landing', { replace: true });
@@ -162,7 +162,7 @@ const Login: React.FC = () => {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
             <Wallet className="h-6 w-6" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">LedgerTracker</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Ledger Tracker</h1>
           <p className="text-muted-foreground">Manage your expenses with ease and security</p>
         </div>
 
@@ -182,7 +182,7 @@ const Login: React.FC = () => {
               Forgot password? Destructive Reset
             </button>
           </div>
-          
+
           <TabsContent value="login">
             <Card className="border-none shadow-xl">
               <CardHeader>
@@ -193,22 +193,22 @@ const Login: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
-                    <Input 
-                      id="username" 
-                      placeholder="johndoe" 
+                    <Input
+                      id="username"
+                      placeholder="johndoe"
                       value={loginUsername}
                       onChange={(e) => setLoginUsername(e.target.value)}
-                      required 
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
+                    <Input
+                      id="password"
+                      type="password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      required 
+                      required
                     />
                   </div>
                 </CardContent>
@@ -220,7 +220,7 @@ const Login: React.FC = () => {
               </form>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="register">
             <Card className="border-none shadow-xl">
               <CardHeader>
@@ -231,22 +231,22 @@ const Login: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="reg-username">Username</Label>
-                    <Input 
-                      id="reg-username" 
-                      placeholder="johndoe" 
+                    <Input
+                      id="reg-username"
+                      placeholder="johndoe"
                       value={regUsername}
                       onChange={(e) => setRegUsername(e.target.value)}
-                      required 
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="reg-password">Password</Label>
-                    <Input 
-                      id="reg-password" 
-                      type="password" 
+                    <Input
+                      id="reg-password"
+                      type="password"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
-                      required 
+                      required
                     />
                   </div>
                 </CardContent>
@@ -273,12 +273,12 @@ const Login: React.FC = () => {
               This action will permanently delete all your data and reset the vault to its initial state.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <p className="text-sm text-slate-200 font-mono bg-slate-900/50 p-3 rounded border border-red-500/20">
               WARNING: This will DROP all local SQLite tables and clear all localStorage. Your vault and all financial data will be PERMANENTLY DELETED.
             </p>
-            
+
             <div className="space-y-2">
               <Label htmlFor="nuke-confirm" className="text-sm">
                 Type &apos;DELETE&apos; to confirm:
