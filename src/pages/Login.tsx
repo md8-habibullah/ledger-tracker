@@ -102,6 +102,50 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setLoginUsername('demo');
+    setLoginPassword('demo');
+    setIsLoading(true);
+    const success = await login('demo', 'demo');
+    setIsLoading(false);
+
+    if (success) {
+      toast({
+        title: "Vault unlocked!",
+        description: "Successfully unlocked demo vault.",
+      });
+      navigate(from, { replace: true });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: "Demo account not found. Please register it first.",
+      });
+    }
+  };
+
+  const handleDemoRegister = async () => {
+    setRegUsername('demo');
+    setRegPassword('demo');
+    setIsLoading(true);
+    const success = await register('demo', 'demo');
+    setIsLoading(false);
+
+    if (success) {
+      toast({
+        title: "Demo Vault created!",
+        description: "Your demo vault has been created.",
+      });
+      navigate(from, { replace: true });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: "Demo account might already be taken.",
+      });
+    }
+  };
+
   const handleNukeStep1Confirm = () => {
     if (nukeConfirmText.toUpperCase() === 'DELETE') {
       setShowNukeWarning(false);
@@ -200,9 +244,25 @@ const Login: React.FC = () => {
                     />
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex-col space-y-3">
                   <Button className="w-full" type="submit" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Sign In"}
+                  </Button>
+                  <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border/50" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">Or</span>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500" 
+                    type="button" 
+                    disabled={isLoading}
+                    onClick={handleDemoLogin}
+                  >
+                    1-Click Login as Demo
                   </Button>
                 </CardFooter>
               </form>
@@ -238,9 +298,25 @@ const Login: React.FC = () => {
                     />
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex-col space-y-3">
                   <Button className="w-full" type="submit" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create Account"}
+                  </Button>
+                  <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border/50" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">Or</span>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500" 
+                    type="button" 
+                    disabled={isLoading}
+                    onClick={handleDemoRegister}
+                  >
+                    1-Click Register as Demo
                   </Button>
                 </CardFooter>
               </form>
