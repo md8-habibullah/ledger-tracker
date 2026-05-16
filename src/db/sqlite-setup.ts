@@ -39,6 +39,11 @@ export async function saveDb() {
   }
 }
 
+export async function destroyDb() {
+  dbInstance = null;
+  await localforage.removeItem('ledger_tracker.db');
+}
+
 function createTables(db: any) {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (

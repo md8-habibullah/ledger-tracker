@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet, AlertTriangle, Trash2 } from 'lucide-react';
-import { getDb, saveDb, type Transaction, type Category, type Budget } from '@/db';
+import { getDb, saveDb, destroyDb, type Transaction, type Category, type Budget } from '@/db';
 
 const Login: React.FC = () => {
   const [loginUsername, setLoginUsername] = useState('');
@@ -119,19 +119,7 @@ const Login: React.FC = () => {
 
   const handleNukeStep2Confirm = async () => {
     try {
-      const db = await getDb();
-
-      // Drop all tables
-      const tables = ['transactions', 'categories', 'budgets', 'users'];
-      for (const table of tables) {
-        try {
-          db.run(`DROP TABLE IF EXISTS ${table}`);
-        } catch (e) {
-          // Table might not exist, continue
-        }
-      }
-
-      await saveDb();
+      await destroyDb();
 
       // Clear all localStorage
       localStorage.clear();
@@ -143,7 +131,7 @@ const Login: React.FC = () => {
 
       // Reset state and redirect
       setTimeout(() => {
-        navigate('/landing', { replace: true });
+        window.location.href = '/landing';
       }, 1000);
     } catch (error) {
       console.error('Nuke sequence error:', error);

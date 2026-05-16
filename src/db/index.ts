@@ -1,4 +1,4 @@
-import { getDb, saveDb, execQuery } from './sqlite-setup';
+import { getDb, saveDb, execQuery, destroyDb } from './sqlite-setup';
 
 export interface Transaction {
   id: number;
@@ -38,4 +38,4 @@ export async function initializeDatabase() {
   await getDb();
 }
 
-export { getDb, saveDb, execQuery };
+export { getDb, saveDb, execQuery, destroyDb };
