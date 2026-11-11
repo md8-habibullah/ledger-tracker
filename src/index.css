@@ -102,11 +102,10 @@
     --chart-5: 26 100% 54%;
 
     /* The owner's logo, exactly as supplied (docs/brand/README.md). Indigo and slate never change; only the ink
-       flips with the theme: Pearl gets the white logo (white tile, dark ink), Vault the dark logo (#191d20 tile, white ink). */
+       flips with the theme: the transparent mark, dark ink on Pearl and white ink on Vault. */
     --logo-indigo: #5a5da9;
     --logo-slate: #6d7987;
-    --logo-ink: #231f20;
-    --logo-tile: #ffffff;
+    --logo-ink: #000000;
 
     --row-height: 2.875rem;
     --dur-fast: 140ms;
@@ -118,7 +117,6 @@
   :root.dark,
   :root[data-theme="vault"] {
     --logo-ink: #ffffff;
-    --logo-tile: #191d20;
     color-scheme: dark;
 
     --background: 30 10% 5%;

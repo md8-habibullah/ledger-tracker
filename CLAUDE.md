@@ -13,7 +13,7 @@ Client-only React + TypeScript SPA: personal finance (entries, budgets, categori
 - `pnpm install --frozen-lockfile` · `pnpm dev` → http://localhost:8080 (no production CSP/headers there)
 - `pnpm typecheck` · `pnpm lint` · `pnpm test` (Vitest, Node) · `pnpm build` (does **not** typecheck) · `pnpm check` runs all four
 - strict-mode check for the core modules: `node_modules/.bin/tsc --noEmit -p tsconfig.strict.json`
-- Run heavy commands one at a time (low-RAM machine). Baseline: tsc 0 errors, strict tsc clean, eslint 0/0, 114 tests pass, build OK.
+- Run heavy commands one at a time (low-RAM machine). Baseline: tsc 0 errors, strict tsc clean, eslint 0/0, 119 tests pass, build OK.
 - A page reload locks the vault by design; when testing in a browser, navigate inside the SPA or use `/demo`.
 
 ## Hard rules

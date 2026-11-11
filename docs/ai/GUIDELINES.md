@@ -32,7 +32,7 @@
 | Typecheck | `pnpm typecheck` | `tsc --noEmit -p tsconfig.app.json`; baseline 0 errors |
 | Strict typecheck | `node_modules/.bin/tsc --noEmit -p tsconfig.strict.json` | strict mode over `crypto/ db/ lib/ vault/ config/`; keep it clean |
 | Lint | `pnpm lint` | baseline 0 errors, 0 warnings |
-| Tests | `pnpm test` (`pnpm test:watch`) | Vitest 3.2.7, Node environment, 114 tests |
+| Tests | `pnpm test` (`pnpm test:watch`) | Vitest 3.2.7, Node environment, 119 tests |
 | Everything | `pnpm check` | typecheck → lint → test → build |
 | Preview build | `pnpm preview` | plain `vite preview`; for header-accurate testing serve `dist/` with the headers from `vercel.json` |
 
@@ -76,7 +76,7 @@
 
 ## 7. Recipes
 
-* **Use the logo:** `<LogoBadge />` (white tile) for brand spots, or `<LogoMark tone="on-light|on-dark|auto" />` on a surface you control. Never redraw or recolour it; rules in `docs/brand/README.md`. To rebuild the files from the owner's originals: `python3 -I docs/brand/build-logo-kit.py docs/brand/originals/lt01-01.svg .`.
+* **Use the logo:** `<Logo />` for brand spots (transparent mark, ink follows the theme; never put it on a tile), or `<LogoMark tone="on-light|on-dark|auto" />` on a surface you control. Never redraw or recolour it; rules in `docs/brand/README.md`. To rebuild the files from the owner's originals: `python3 -I docs/brand/build-logo-kit.py docs/brand/originals .`.
 * **Add an app page:** create `src/pages/Foo.tsx` (default export), `lazy()`-import it in `src/App.tsx` and add `<Route path="foo" element={<Foo />} />` inside the `/app` `RequireVault` route; add `{ to: "/app/foo", label, icon, end, go }` to `NAV` in `src/components/layout/sidebarModel.ts` (`go` is the letter after `g` that jumps there; keep it unique). The desktop sidebar, the icon rail and the phone bar all render from `NAV`.
 * **Add a public page:** same, but inside the `PublicLayout` route; add it to `public/sitemap.xml` if it should be indexed, and decide whether it needs `X-Robots-Tag: noindex` in `vercel.json`.
 * **Add a currency:** append to `CURRENCIES` in `src/lib/money.ts` (code, symbol, exponent, locale) and add a test.

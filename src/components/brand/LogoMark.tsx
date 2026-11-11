@@ -5,7 +5,7 @@ import { LOGO_COLORS, LOGO_HEIGHT, LOGO_SHAPES, LOGO_VIEWBOX, LOGO_WIDTH, type L
 /**
  * Which ink the mark's white edges and base line use. The owner's logo has two colours that never change
  * (indigo and slate) and one ink that has to contrast with whatever sits behind it:
- *  - "auto"     follows the theme: dark ink on Pearl, white ink on Vault (the `--logo-ink` token in index.css).
+ *  - "auto"     follows the theme: dark ink on Pearl, white ink on Vault (the `--logo-ink` token in index.css). Default.
  *  - "on-light" always the dark ink. For a white or light surface.
  *  - "on-dark"  always white. For a dark surface.
  * Use "auto" on the page's own background; the fixed tones for a surface whose colour you control.
@@ -50,19 +50,9 @@ export function LogoMark({ size = 28, tone = "auto", className, title }: { size?
 }
 
 /**
- * The logo as the owner supplied it, on its own tile, matched to the theme: the white logo (white tile, dark ink) on
- * Pearl and the dark logo (`#191d20` tile, white ink) on Vault. It is what the headers, the sidebar, the hero card and
- * Settings use. The tile and ink are the `--logo-tile` and `--logo-ink` tokens, so they switch with the theme.
- * A hairline ring in the text colour keeps the tile's edge visible on either background.
+ * The logo for every brand spot in the app (headers, sidebar, hero card, splash, Settings): the owner's transparent
+ * mark, no tile, with the ink following the theme through `--logo-ink`. Dark ink on Pearl, white ink on Vault.
  */
-export function LogoBadge({ size = 36, className }: { size?: number; className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={cn("inline-grid shrink-0 place-items-center rounded-[10px] shadow-[0_0_0_1px_hsl(var(--foreground)/0.16),0_8px_18px_-8px_hsl(var(--foil-2)/0.7)]", className)}
-      style={{ width: size, height: size, backgroundColor: `var(--logo-tile, ${LOGO_COLORS.tileLight})` }}
-    >
-      <LogoMark size={Math.round(size * 0.74)} tone="auto" />
-    </span>
-  );
+export function Logo({ size = 36, className }: { size?: number; className?: string }) {
+  return <LogoMark size={size} tone="auto" className={className} />;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { LogoBadge } from "@/components/brand/LogoMark";
+import { Logo } from "@/components/brand/LogoMark";
 import { Seal } from "@/components/ledger/Seal";
 import { DEFAULT_PBKDF2_ITERATIONS } from "@/crypto/envelope";
 import { formatMoney } from "@/lib/money";
@@ -77,7 +77,7 @@ export function HeroCards({ className }: { className?: string }) {
             <span className="sheen" />
             <div className="relative flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <LogoBadge size={36} />
+                <Logo size={36} />
                 <span className="font-display text-lg font-semibold">Ledger Tracker</span>
               </div>
               <span className="rounded-full bg-foreground/[0.08] px-2.5 py-1 text-xs text-muted-foreground">Sample data</span>

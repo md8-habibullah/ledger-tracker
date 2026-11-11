@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { LogoBadge } from "@/components/brand/LogoMark";
+import { Logo } from "@/components/brand/LogoMark";
 import { SITE } from "@/config/site";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ export function PublicLayout() {
       <header className="sticky top-3 z-40 px-3">
         <div className="glass mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 rounded-full pl-5 pr-2">
           <Link to="/" className="flex items-center gap-2.5" aria-label="Ledger Tracker home">
-            <LogoBadge size={34} />
+            <Logo size={34} />
             <span className="font-display text-lg font-semibold tracking-tight">Ledger Tracker</span>
           </Link>
           <nav aria-label="Site" className="flex items-center gap-1 text-sm">
@@ -50,7 +50,7 @@ export function PublicLayout() {
         </div>
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-8 text-sm text-muted-foreground md:px-8">
           <p className="flex items-center gap-2.5">
-            <LogoBadge size={26} />
+            <Logo size={26} />
             Ledger Tracker runs in your browser. It has no server of its own and never sends your entries anywhere.
           </p>
           <p className="flex flex-wrap gap-x-5 gap-y-1">

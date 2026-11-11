@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PasswordField, UsernameHint } from "@/components/auth/PasswordField";
 import { RecoveryKeyPanel } from "@/components/auth/RecoveryKeyPanel";
 import { PageHeader, RuleSection } from "@/components/ledger/bits";
-import { LogoBadge } from "@/components/brand/LogoMark";
+import { Logo } from "@/components/brand/LogoMark";
 import { setMeta } from "@/db/repo";
 import { WrongCredentialsError } from "@/crypto/envelope";
 import { downloadText, transactionsToCsv } from "@/lib/csv";
@@ -378,7 +378,7 @@ function DataTab() {
 function About() {
   return (
     <div className="grid max-w-prose gap-4 py-5 text-[0.9375rem] leading-6">
-      <p className="flex items-center gap-2 text-base font-medium"><LogoBadge size={28} />Ledger Tracker <span className="figure text-muted-foreground">v{__APP_VERSION__}</span></p>
+      <p className="flex items-center gap-2 text-base font-medium"><Logo size={28} />Ledger Tracker <span className="figure text-muted-foreground">v{__APP_VERSION__}</span></p>
       <p>A personal money ledger that runs entirely in your browser. There is no account and no server: your entries are encrypted with your password and stored in this browser's IndexedDB.</p>
       <p className="flex gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /><span>What that does and does not protect against is written down on the <a className="text-primary underline underline-offset-2" href="/security">security page</a>.</span></p>
       <p className="flex gap-2"><Database className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /><span>The source code is open: <a className="text-primary underline underline-offset-2" href="https://github.com/md8-habibullah/ledger-tracker" rel="noopener noreferrer">github.com/md8-habibullah/ledger-tracker</a>. MIT licence.</span></p>

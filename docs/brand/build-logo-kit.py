@@ -1,46 +1,75 @@
 #!/usr/bin/env python3
-"""Builds the Ledger Tracker logo kit from the owner's supplied lt01-01.svg.
+"""Builds the Ledger Tracker logo kit from the owner's supplied vector files.
 
-Usage (from the repo root):  python3 -I docs/brand/build-logo-kit.py docs/brand/originals/lt01-01.svg .
+Each theme comes from its own file:
+  dark surfaces  -> lt02-01.svg (the transparent version with white edges)
+  light surfaces -> lt04-01.svg (the transparent version with black edges; the designer left that fill unset, which SVG renders black)
+
+Usage (from the repo root):  python3 -I docs/brand/build-logo-kit.py docs/brand/originals .
 Needs rsvg-convert (librsvg) and ImageMagick (`magick`). It rewrites public/brand/*, public/favicon.svg,
 public/favicon.ico, public/logo.svg, public/apple-touch-icon.png and src/components/brand/logoGeometry.ts.
 
-Geometry is parsed from the owner's file, never retyped. Only the layout (crop, padding, tile) and the
-choice of ink colour per surface are decided here. See docs/brand/README.md.
+Geometry and colours are parsed from the owner's files, never retyped; the two files must be the same drawing
+(this script stops if they are not). Only the layout (crop, padding) is decided here. See docs/brand/README.md.
 """
+import re
 import tempfile
 import json
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
-SRC = Path(sys.argv[1])          # .../lt01-01.svg (the dark one: slate, indigo, white ink, dark bg, text)
+ORIG = Path(sys.argv[1])         # docs/brand/originals
 REPO = Path(sys.argv[2])
-NS = "{http://www.w3.org/2000/svg}"
 
 INDIGO = "#5a5da9"               # owner's colours, exactly as in the supplied files
 SLATE = "#6d7987"
-INK_ON_LIGHT = "#231f20"         # the one dark in the owner's files (the light variants left it unset = black)
-INK_ON_DARK = "#ffffff"
-TILE_DARK = "#191d20"            # the owner's dark background in lt01
-TILE_LIGHT = "#ffffff"           # and the white background in lt03
 
-# ---- parse: class -> colour role in lt01
-ROLE = {"cls-7": "slate", "cls-8": "indigo", "cls-5": "ink"}
-tree = ET.parse(SRC)
-shapes = {"slate": [], "indigo": [], "ink": []}
-for el in tree.iter():
-    tag = el.tag.replace(NS, "")
-    role = ROLE.get(el.get("class", ""))
-    if tag in ("polygon", "path", "rect") and role:
+
+def norm(colour):
+    c = colour.lower()
+    return "#" + "".join(ch * 2 for ch in c[1:]) if len(c) == 4 else c
+
+
+def load(name):
+    """The mark in one of the owner's files: its shapes by colour role, and its edge ("ink") colour.
+    A shape whose class sets no fill renders black (the SVG default), exactly as in the file."""
+    svg = (ORIG / name).read_text()
+    fills = {}
+    for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", svg):
+        m = re.search(r"(?:^|;|\s)fill:\s*(#[0-9a-fA-F]{3,6})", body)
+        if m:
+            for c in sel.split(","):
+                fills[c.strip().lstrip(".")] = norm(m.group(1))
+    roles = {"slate": [], "indigo": [], "ink": []}
+    inks = set()
+    for tag, attrs in re.findall(r"<(polygon|path|rect)\b([^>]*)/>", svg):
+        def attr(n):
+            m = re.search(rf'(?:^|\s){n}="([^"]*)"', attrs)
+            return m.group(1) if m else None
+        fill = fills.get(attr("class"), "#000000")
         if tag == "polygon":
-            shapes[role].append({"kind": "polygon", "points": el.get("points")})
+            shape = {"kind": "polygon", "points": attr("points")}
         elif tag == "path":
-            shapes[role].append({"kind": "path", "d": el.get("d")})
+            shape = {"kind": "path", "d": attr("d")}
         else:
-            shapes[role].append({"kind": "rect", "x": el.get("x"), "y": el.get("y"), "width": el.get("width"), "height": el.get("height")})
-assert [len(shapes[k]) for k in ("slate", "indigo", "ink")] == [2, 5, 4], {k: len(v) for k, v in shapes.items()}
+            shape = {"kind": "rect", "x": attr("x"), "y": attr("y"), "width": attr("width"), "height": attr("height")}
+        if fill == SLATE:
+            roles["slate"].append(shape)
+        elif fill == INDIGO:
+            roles["indigo"].append(shape)
+        else:
+            roles["ink"].append(shape)
+            inks.add(fill)
+    assert [len(roles[k]) for k in ("slate", "indigo", "ink")] == [2, 5, 4], {k: len(v) for k, v in roles.items()}
+    assert len(inks) == 1, inks
+    return roles, inks.pop()
+
+
+shapes, INK_ON_DARK = load("lt02-01.svg")          # dark surfaces
+light_shapes, INK_ON_LIGHT = load("lt04-01.svg")   # light surfaces
+assert light_shapes == shapes, "lt02 and lt04 are not the same drawing"
+assert INK_ON_DARK != INK_ON_LIGHT
 
 
 def svg_shape(s, fill):
@@ -80,60 +109,47 @@ def fmt(v):
     return f"{v:.3f}".rstrip("0").rstrip(".")
 
 
-def standalone(ink, pad_ratio=0.06):
+STYLE = (
+    f"  <style>.k{{fill:{INK_ON_LIGHT}}}@media (prefers-color-scheme:dark){{.k{{fill:{INK_ON_DARK}}}}}</style>\n"
+)
+
+
+def transparent(ink, pad_ratio=0.06, square=0, adaptive=False):
+    """The mark on a transparent ground. ink=None + adaptive: the ink follows the viewer's colour scheme."""
     pad = pad_ratio * MW
-    vb = (AX0 - pad, AY0 - pad, MW + 2 * pad, MH + 2 * pad)
+    w, h = MW + 2 * pad, MH + 2 * pad
+    if square:  # a square canvas (favicons): centre the mark, same padding on the long side
+        side = max(w, h)
+        vb = (CX - side / 2, CY - side / 2, side, side)
+    else:
+        vb = (AX0 - pad, AY0 - pad, w, h)
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{" ".join(fmt(v) for v in vb)}" role="img" aria-label="Ledger Tracker">\n'
-        f"  <title>Ledger Tracker</title>\n{mark_body(ink)}\n</svg>\n",
-        vb,
-    )
-
-
-def tile(bg, ink, mark_ratio=0.60, size=1024, radius=0, adaptive=False):
-    s = size * mark_ratio / MW
-    rect = f'<rect width="{size}" height="{size}"' + (f' rx="{radius}"' if radius else "") + (' class="t"/>' if adaptive else f' fill="{bg}"/>')
-    style = (
-        f"  <style>.t{{fill:{TILE_LIGHT}}}.k{{fill:{INK_ON_LIGHT}}}"
-        f"@media (prefers-color-scheme:dark){{.t{{fill:{TILE_DARK}}}.k{{fill:{INK_ON_DARK}}}}}</style>\n"
-        if adaptive else ""
-    )
-    return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" role="img" aria-label="Ledger Tracker">\n'
-        f"  <title>Ledger Tracker</title>\n{style}  {rect}\n"
-        f'  <g transform="translate({fmt(size / 2)} {fmt(size / 2)}) scale({fmt(s)}) translate({fmt(-CX)} {fmt(-CY)})">\n{mark_body(ink)}\n  </g>\n</svg>\n'
+        f"  <title>Ledger Tracker</title>\n{STYLE if adaptive else ''}{mark_body(None if adaptive else ink)}\n</svg>\n"
     )
 
 
 brand = REPO / "public" / "brand"
 brand.mkdir(parents=True, exist_ok=True)
+for stale in brand.glob("tile-*"):  # an earlier kit shipped tiles; the logo is transparent everywhere now
+    stale.unlink()
 
-files = {}
-files["mark-on-light.svg"], vb_light = standalone(INK_ON_LIGHT)
-files["mark-on-dark.svg"], _ = standalone(INK_ON_DARK)
-files["tile-white.svg"] = tile("#ffffff", INK_ON_LIGHT)
-files["tile-dark.svg"] = tile(TILE_DARK, INK_ON_DARK)
-for name, text in files.items():
-    (brand / name).write_text(text)
+(brand / "mark-on-light.svg").write_text(transparent(INK_ON_LIGHT))
+(brand / "mark-on-dark.svg").write_text(transparent(INK_ON_DARK))
+# favicon and /logo.svg are transparent and follow the viewer's colour scheme: dark ink on light, white ink on dark
+(REPO / "public" / "favicon.svg").write_text(transparent(None, pad_ratio=0.02, square=1, adaptive=True))
+(REPO / "public" / "logo.svg").write_text(transparent(None, adaptive=True))
 
-# root assets: the favicon follows the browser's colour scheme: the white logo on a light tab strip, the dark logo on a dark one
-fav = tile(TILE_LIGHT, None, mark_ratio=0.82, size=64, radius=13, adaptive=True)
-(REPO / "public" / "favicon.svg").write_text(fav)
-# /logo.svg stays a stable URL; it is the white tile, which is visible on any background
-(REPO / "public" / "logo.svg").write_text(files["tile-white.svg"])
-
-# apple-touch-icon: opaque, full-bleed (iOS rounds the corners itself)
-(tmp / "apple.svg").write_text(tile("#ffffff", INK_ON_LIGHT, mark_ratio=0.66, size=180))
+# apple-touch-icon: iOS puts a black ground behind transparency, so this one carries the white ink
+(tmp / "apple.svg").write_text(transparent(INK_ON_DARK, pad_ratio=0.1, square=1))
 subprocess.run(["rsvg-convert", "-w", "180", "-h", "180", str(tmp / "apple.svg"), "-o", str(REPO / "public" / "apple-touch-icon.png")], check=True)
 
-# PNG exports for places that cannot take SVG (avatars, slides, social)
-for name in ("tile-white", "tile-dark"):
-    subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", str(brand / f"{name}.svg"), "-o", str(brand / f"{name}-512.png")], check=True)
+# PNG exports for places that cannot take SVG (slides, social, avatars)
 for name in ("mark-on-light", "mark-on-dark"):
     subprocess.run(["rsvg-convert", "-w", "512", str(brand / f"{name}.svg"), "-o", str(brand / f"{name}-512.png")], check=True)
 
-# favicon.ico: 16, 32 and 48, always the white logo (an .ico cannot follow the colour scheme)
-(tmp / "favicon-light.svg").write_text(tile(TILE_LIGHT, INK_ON_LIGHT, mark_ratio=0.82, size=64, radius=13))
+# favicon.ico: 16, 32 and 48, transparent with the dark ink (an .ico cannot follow the colour scheme; browsers use the svg)
+(tmp / "favicon-light.svg").write_text(transparent(INK_ON_LIGHT, pad_ratio=0.02, square=1))
 pngs = []
 for px in (16, 32, 48):
     out = tmp / f"fav-{px}.png"
@@ -146,13 +162,17 @@ pad = 0.0075 * MW  # a hair of room so antialiasing at the edge is never clipped
 vbx, vby, vbw, vbh = AX0 - pad, AY0 - pad, MW + 2 * pad, MH + 2 * pad
 ts = [
     "/**",
-    " * The Ledger Tracker logo mark, exactly as drawn in the owner's supplied vector files (lt01 to lt04).",
-    " * Generated from lt01-01.svg: the shapes are the owner's, nothing here is redrawn. See docs/brand/README.md.",
+    " * The Ledger Tracker logo mark, exactly as drawn in the owner's supplied vector files.",
+    " * Generated by docs/brand/build-logo-kit.py from lt02-01.svg (dark surfaces) and lt04-01.svg (light surfaces), which",
+    " * are the same drawing with a different edge colour. Nothing here is redrawn. See docs/brand/README.md.",
     " */",
     "",
     f'export const LOGO_VIEWBOX = "{" ".join(fmt(v) for v in (vbx, vby, vbw, vbh))}";',
     f"export const LOGO_WIDTH = {fmt(vbw)};",
     f"export const LOGO_HEIGHT = {fmt(vbh)};",
+    "",
+    "/** Which of the owner's files each theme is built from. */",
+    'export const LOGO_SOURCES = { light: "lt04-01.svg", dark: "lt02-01.svg" } as const;',
     "",
     "/** The owner's colours. Indigo and slate are the same on every surface; only the ink changes. */",
     "export const LOGO_COLORS = {",
@@ -160,8 +180,6 @@ ts = [
     f'  slate: "{SLATE}",',
     f'  inkOnLight: "{INK_ON_LIGHT}",',
     f'  inkOnDark: "{INK_ON_DARK}",',
-    f'  tileDark: "{TILE_DARK}",',
-    f'  tileLight: "{TILE_LIGHT}",',
     "} as const;",
     "",
     "export type LogoShape =",

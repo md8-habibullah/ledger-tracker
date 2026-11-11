@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { Lock, Monitor, Moon, PanelLeftClose, PanelLeftOpen, Sun, TriangleAlert } from "lucide-react";
-import { LogoBadge } from "@/components/brand/LogoMark";
+import { Logo } from "@/components/brand/LogoMark";
 import { CategoryMark, Kbd } from "@/components/ledger/bits";
 import { ProgressRule } from "@/components/ledger/charts";
 import { Money } from "@/components/ledger/Money";
@@ -285,13 +285,13 @@ export function Sidebar({ summary, collapsed, onToggle, armed }: { summary: Side
       <div className={cn("glass sticky top-4 flex h-[calc(100dvh-2rem)] flex-col py-5 [@media(max-height:760px)]:py-3", collapsed ? "items-center px-2" : "px-3")}>
         {collapsed ? (
           <div className="grid justify-items-center gap-3">
-            <LogoBadge size={38} />
+            <Logo size={38} />
             {toggle}
           </div>
         ) : (
           <div className="flex items-center justify-between gap-2 pl-3 pr-1">
             <div className="flex min-w-0 items-center gap-2.5">
-              <LogoBadge size={38} />
+              <Logo size={38} />
               <span className="truncate font-display text-xl font-semibold tracking-tight">Ledger Tracker</span>
             </div>
             {toggle}

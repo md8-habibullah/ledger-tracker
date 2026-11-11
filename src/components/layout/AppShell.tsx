@@ -4,7 +4,7 @@ import { Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EntrySheetProvider, useEntrySheet } from "@/components/ledger/EntrySheet";
 import { Kbd } from "@/components/ledger/bits";
-import { LogoBadge } from "@/components/brand/LogoMark";
+import { Logo } from "@/components/brand/LogoMark";
 import { Seal } from "@/components/ledger/Seal";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";
@@ -83,7 +83,7 @@ function Shell() {
         <header className="no-print sticky top-0 z-30 px-4 pt-3 md:px-8">
           <div className="glass flex h-14 items-center justify-between gap-3 rounded-full pl-5 pr-2">
             <div className="flex min-w-0 items-center gap-2 md:hidden">
-              <LogoBadge size={32} />
+              <Logo size={32} />
               <span className="whitespace-nowrap font-display text-base font-semibold">Ledger Tracker</span>
             </div>
             <div className="hidden min-w-0 md:block">

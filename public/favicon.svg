@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ledger Tracker">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="271.174 184.264 737.142 737.142" role="img" aria-label="Ledger Tracker">
   <title>Ledger Tracker</title>
-  <style>.t{fill:#ffffff}.k{fill:#231f20}@media (prefers-color-scheme:dark){.t{fill:#191d20}.k{fill:#ffffff}}</style>
-  <rect width="64" height="64" rx="13" class="t"/>
-  <g transform="translate(32 32) scale(0.074) translate(-639.745 -552.835)">
+  <style>.k{fill:#000000}@media (prefers-color-scheme:dark){.k{fill:#ffffff}}</style>
     <polygon fill="#6d7987" points="774.26 243.68 545 243.68 545 439.24 639.32 536.18 774.26 394.5 774.26 243.68"/>
     <polygon fill="#6d7987" points="635.85 685.63 543.34 591.72 543.17 591.88 543.17 736.46 761.04 736.46 761.04 564.89 760.93 565 761.04 564.89 761.04 564.1 635.85 685.63"/>
     <polygon fill="#5a5da9" points="391 736.46 543.17 736.46 543.17 591.88 391 736.46"/>
@@ -14,5 +12,4 @@
     <polygon class="k" points="760.65 564.5 760.65 739.77 790.64 739.77 790.64 535.29 760.93 565 790.64 535.29 790.64 534.51 760.65 564.5"/>
     <path class="k" d="m764.32,791.61v28.91h-404.38c-7.99,0-14.46-6.47-14.46-14.45s6.48-14.45,14.46-14.45h404.38Z"/>
     <polygon class="k" points="760.6 257.9 760.65 257.9 760.65 409 790.64 379 790.64 257.9 790.84 257.9 790.84 229.71 760.6 257.9"/>
-  </g>
 </svg>

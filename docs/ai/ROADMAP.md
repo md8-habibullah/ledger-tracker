@@ -27,7 +27,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | 0.2 green baseline | ✅ | tsc 0, eslint 0/0, `typecheck` script |
 | 0.3 delete dead code | ✅ | 37 shadcn files, 31 packages, old pages, `schema.sql`, wasm copy, screenshots, `scratch/` |
 | 0.4 network hygiene | ✅ | fonts self-hosted, launcher and avatar removed; the CSP went straight to **enforced** |
-| 0.5 tests + CI | 🟡 | 114 Vitest tests (Node, no DOM); `ci.yml` written but never run on GitHub; no component tests |
+| 0.5 tests + CI | 🟡 | 119 Vitest tests (Node, no DOM); `ci.yml` written but never run on GitHub; no component tests |
 | 0.6 tooling | ✅ | `packageManager`, `engines`, `allowBuilds`, dev host `localhost` |
 | 0.7 quick fixes | ✅ | |
 | 1.1 schema + migrations | ✅ | `PRAGMA user_version`; FKs on; legacy upgrade through `migrateLegacyUser` |
