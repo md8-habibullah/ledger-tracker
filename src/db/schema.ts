@@ -2,7 +2,7 @@ import { type Database, query, withTransaction } from "./sql";
 
 /**
  * Runtime schema, versioned with PRAGMA user_version. This is the ONLY place the
- * schema is defined. Add a migration by appending to MIGRATIONS — never edit an
+ * schema is defined. Add a migration by appending to MIGRATIONS - never edit an
  * existing entry once a release has shipped it.
  */
 

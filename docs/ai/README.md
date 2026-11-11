@@ -1,6 +1,6 @@
-# docs/ai — project knowledge for future development
+# docs/ai - project knowledge for future development
 
-This folder is the **source of truth for how Ledger Tracker works, what is wrong with it, and where it is going**. It exists so any contributor — human or AI agent — can start work without re-auditing the codebase. It began as a full audit on 2026-11-11 (commit `8b21342`) and was updated the same day after the vault, redesign and showcase work was implemented (uncommitted at the time of writing). [CURRENT-STATE.md §0](./CURRENT-STATE.md) is the current truth; §3–§4 there are the historic audit. Verification methods are in §7 of that file.
+This folder is the **source of truth for how Ledger Tracker works, what is wrong with it, and where it is going**. It exists so any contributor - human or AI agent - can start work without re-auditing the codebase. It began as a full audit on 2026-11-11 (commit `8b21342`) and was updated the same day after the vault, redesign and showcase work was implemented (uncommitted at the time of writing). [CURRENT-STATE.md §0](./CURRENT-STATE.md) is the current truth; §3–§4 there are the historic audit. Verification methods are in §7 of that file.
 
 | File | Question it answers | Read when |
 |---|---|---|
@@ -14,7 +14,7 @@ Entry points elsewhere: [`/CLAUDE.md`](../../CLAUDE.md) (short brief for Claude 
 
 ## Conventions used in these docs
 
-* **IDs:** `SEC-n` security/honesty · `DATA-n` integrity · `BUG-n` behaviour · `DEBT-n` tech debt (all in CURRENT-STATE §4) · `F-n` feature (REDESIGN §6) · `0.1`…`5.8` roadmap items · `D1…D8`, `P` owner decisions (ROADMAP §0). IDs are stable — never renumber; add new ones at the end.
+* **IDs:** `SEC-n` security/honesty · `DATA-n` integrity · `BUG-n` behaviour · `DEBT-n` tech debt (all in CURRENT-STATE §4) · `F-n` feature (REDESIGN §6) · `0.1`…`5.8` roadmap items · `D1…D8`, `P` owner decisions (ROADMAP §0). IDs are stable - never renumber; add new ones at the end.
 * **Evidence:** `path:line` at the audited commit. If code moved, `grep -n` the symbol.
 * **Verified vs proposed:** ARCHITECTURE and CURRENT-STATE §0 describe facts. ROADMAP §S records what was built. The rest of ROADMAP and REDESIGN is the original plan; decisions were applied at the recommended defaults on a blanket approval and are **provisional until the owner confirms them** (ROADMAP §S).
 * **Sizes:** S / M / L / XL are relative effort, not dates.

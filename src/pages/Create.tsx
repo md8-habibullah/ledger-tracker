@@ -93,7 +93,7 @@ export default function Create() {
             <Label htmlFor="vault-currency">Currency</Label>
             <Select name="currency" value={currency} onValueChange={setCurrency}>
               <SelectTrigger id="vault-currency" className="h-11"><SelectValue /></SelectTrigger>
-              <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.code} — {c.name} ({c.symbol})</SelectItem>)}</SelectContent>
+              <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c.code} value={c.code}>{c.code} - {c.name} ({c.symbol})</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="flex items-center justify-between gap-3">

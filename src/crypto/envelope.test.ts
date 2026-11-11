@@ -17,7 +17,7 @@ import {
 } from "./envelope";
 import { formatRecoveryKey, generateRecoveryKey, parseRecoveryKey } from "./recovery";
 
-const ITER = 1_000; // tests only — production default is 600,000
+const ITER = 1_000; // tests only - production default is 600,000
 const SECRET_DB = utf8("SQLite format 3\0 pretend this is the whole database");
 
 async function fresh(password = "correct horse battery staple") {

@@ -172,7 +172,7 @@ export function useVault(): VaultContextValue {
   return ctx;
 }
 
-/** Seconds until auto-lock, or null when it is off. Re-renders once per second — use only where displayed. */
+/** Seconds until auto-lock, or null when it is off. Re-renders once per second - use only where displayed. */
 export function useAutoLockCountdown(): number | null {
   const { autoLockMinutes, activity, snapshot } = useVault();
   const [now, setNow] = useState(Date.now());

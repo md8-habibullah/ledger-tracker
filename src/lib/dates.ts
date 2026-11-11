@@ -1,6 +1,6 @@
 /**
  * Calendar dates are plain "YYYY-MM-DD" strings in the user's LOCAL time zone.
- * Never derive "today" from toISOString() — that is UTC and is wrong after
+ * Never derive "today" from toISOString() - that is UTC and is wrong after
  * 18:00 in Dhaka (UTC+6). ISO date strings sort lexicographically, so comparisons
  * and SQL range queries use plain string comparison.
  */

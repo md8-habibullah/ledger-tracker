@@ -70,7 +70,7 @@ export function describeError(error: unknown): string {
 
 /**
  * Run a write as one atomic unit, then persist it (encrypted). Resolves to the result, or undefined
- * after showing the reason. A failed save keeps the on-screen state in memory — say so loudly.
+ * after showing the reason. A failed save keeps the on-screen state in memory - say so loudly.
  */
 export function useMutate() {
   const { service } = useVault();

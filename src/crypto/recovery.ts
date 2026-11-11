@@ -4,7 +4,7 @@ import { type Bytes, randomBytes } from "./bytes";
  * Recovery key = 160 random bits shown as Crockford Base32 (32 chars) followed by a
  * 20-bit CRC (4 chars), grouped in fours: XXXX-XXXX-…-XXXX (9 groups).
  * The CRC lets the UI say "check for typos" instead of a generic wrong-key error.
- * The CRC is NOT a security feature — the 160 random bits are the secret.
+ * The CRC is NOT a security feature - the 160 random bits are the secret.
  */
 export const RECOVERY_SECRET_BYTES = 20;
 const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford: no I, L, O, U

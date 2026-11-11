@@ -56,7 +56,7 @@ export function QuickEntryBar() {
     const parts = [
       parsed.kind === "income" ? "Money in" : "Money out",
       money(parsed.amountMinor, { compactWhole: true }),
-      category ? category.name : "no category yet — Enter opens the form",
+      category ? category.name : "no category yet - Enter opens the form",
       formatDayLabel(parsed.occurredOn, ledger.today),
     ];
     if (parsed.note) parts.push(`“${parsed.note}”`);

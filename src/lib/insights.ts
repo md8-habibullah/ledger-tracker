@@ -10,7 +10,7 @@ export interface Insight {
 
 /**
  * Up to three locally computed observations. Every sentence is derived from the numbers shown
- * elsewhere on the page — no guessing, no advice, and nothing is sent anywhere.
+ * elsewhere on the page - no guessing, no advice, and nothing is sent anywhere.
  */
 export function computeInsights(
   transactions: readonly Transaction[],

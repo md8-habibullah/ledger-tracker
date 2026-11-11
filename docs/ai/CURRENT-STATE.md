@@ -1,8 +1,8 @@
-# Current state — audit, findings registry, baseline
+# Current state - audit, findings registry, baseline
 
 > **Audited:** 2026-11-11 against commit `8b21342`. Evidence in §3–§4 is `file:line` **at that commit** and is kept as history: most of those files no longer exist.
 > **Implemented:** 2026-11-11 (same day, uncommitted working tree). §0 is the current truth; read it first.
-> How things were verified is listed in §7 — "RUN" means executed, "READ" means established by reading code.
+> How things were verified is listed in §7 - "RUN" means executed, "READ" means established by reading code.
 > Finding IDs (`SEC-1`, `DATA-3`, …) are referenced by [ROADMAP.md](./ROADMAP.md). Severity: **Critical** (misrepresents security / can expose data), **High**, **Medium**, **Low**.
 
 ## 0. Current state (after the 2026-11-11 implementation)
@@ -77,25 +77,25 @@ Browser-verified on the production build served with the exact headers from `ver
 
 ---
 
-## 1. Executive summary (at audit — historic)
+## 1. Executive summary (at audit - historic)
 
-The app is a tidy, working local-first finance tracker with a clean enough structure to build on (hooks over a local SQL engine, shadcn components, sensible routes). Its **security story is the problem**: the README, Landing page and FAQ say the data is encrypted ("military-grade", "AES-256", "your password is never stored"), but **nothing is encrypted and passwords are stored in plaintext**. For a project that will be shown to clients as proof of quality, that gap is the single biggest risk — a technical visitor can open DevTools → Application → IndexedDB and see it in 30 seconds. Second: several visible bugs (mixed currencies on one screen, theme not applied on reload, budget periods ignored) that undermine polish. Third: no tests/CI, so none of it is protected from regressions.
+The app is a tidy, working local-first finance tracker with a clean enough structure to build on (hooks over a local SQL engine, shadcn components, sensible routes). Its **security story is the problem**: the README, Landing page and FAQ say the data is encrypted ("military-grade", "AES-256", "your password is never stored"), but **nothing is encrypted and passwords are stored in plaintext**. For a project that will be shown to clients as proof of quality, that gap is the single biggest risk - a technical visitor can open DevTools → Application → IndexedDB and see it in 30 seconds. Second: several visible bugs (mixed currencies on one screen, theme not applied on reload, budget periods ignored) that undermine polish. Third: no tests/CI, so none of it is protected from regressions.
 
 Everything else (design, features, performance, SEO) is improvable, but those three items decide whether the showcase builds trust or loses it.
 
-## 2. Baseline at audit (historic — current numbers are in §0.1)
+## 2. Baseline at audit (historic - current numbers are in §0.1)
 
 | Check | Command | Result |
 |---|---|---|
 | Install | `pnpm install --frozen-lockfile` | installs OK; **exits non-zero** with `ERR_PNPM_IGNORED_BUILDS` (`@swc/core`, `esbuild`) under pnpm 12. Binaries ship as optional deps, so every tool below still works. Lockfile unchanged. |
-| Typecheck | `node_modules/.bin/tsc --noEmit -p tsconfig.app.json` | **1 error** — `AuthContext.tsx:92` TS2367 (dead `'never'` comparison after narrowing). No `typecheck` script exists. |
-| Lint | `node_modules/.bin/eslint .` | **11 errors, 10 warnings** — 7× `no-explicit-any` (5 in `sqlite-setup.ts`, 2 in `useTransactions.ts`), 1× `ban-ts-comment` (`sqlite-setup.ts:4`), 2× empty-interface (`ui/command.tsx:24`, `ui/textarea.tsx:5`), 1× `no-require-imports` (`tailwind.config.ts:153`); warnings are `react-refresh/only-export-components` + one `exhaustive-deps` (`useTheme.ts:204`). |
+| Typecheck | `node_modules/.bin/tsc --noEmit -p tsconfig.app.json` | **1 error** - `AuthContext.tsx:92` TS2367 (dead `'never'` comparison after narrowing). No `typecheck` script exists. |
+| Lint | `node_modules/.bin/eslint .` | **11 errors, 10 warnings** - 7× `no-explicit-any` (5 in `sqlite-setup.ts`, 2 in `useTransactions.ts`), 1× `ban-ts-comment` (`sqlite-setup.ts:4`), 2× empty-interface (`ui/command.tsx:24`, `ui/textarea.tsx:5`), 1× `no-require-imports` (`tailwind.config.ts:153`); warnings are `react-refresh/only-export-components` + one `exhaustive-deps` (`useTheme.ts:204`). |
 | Build | `node_modules/.bin/vite build` | succeeds in ~4.4 s. JS **1,157 kB / 344 kB gzip** (single chunk), CSS 75.7 kB, WASM 660 kB. Warnings: chunk > 500 kB; `db/index.ts` mixed static/dynamic import. |
 | Dev server | `pnpm dev` | starts in ~160 ms on **`:8080`**, bound to `::` (LAN-reachable). `:5173` (README) does not respond. |
-| Tests | — | **none exist** (no runner, no spec files, no CI, no `.github/`). |
+| Tests | - | **none exist** (no runner, no spec files, no CI, no `.github/`). |
 | `scratch/test-sqlite.cjs` | `node scratch/test-sqlite.cjs` | passes, but it tests an inline mini-schema, not the app. |
 
-## 3. Claims vs reality (at audit — all corrected; see §0.2)
+## 3. Claims vs reality (at audit - all corrected; see §0.2)
 
 | # | Claim (where) | Reality | Verdict |
 |---|---|---|---|
@@ -113,9 +113,9 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 | 12 | README project tree: `VaultGateway` under `auth/` | It is in `components/vault/` | **Wrong** |
 | 13 | README: multi-user "per-user sessions with persistent tokens" | A bare `user_id` integer in localStorage | **Misleading** |
 | 14 | "Zero telemetry / no tracking" | True for the repo (no analytics code). If analytics is added at the hosting-domain level outside the repo, public copy must say so. | **True (repo)** |
-| 15 | LICENSE vs history | `LICENSE` is MIT (a 2026-04-30 commit message mentions Apache 2.0 — stale) | OK, README matches LICENSE |
+| 15 | LICENSE vs history | `LICENSE` is MIT (a 2026-04-30 commit message mentions Apache 2.0 - stale) | OK, README matches LICENSE |
 
-## 4. Findings registry (at audit — statuses in §0.2)
+## 4. Findings registry (at audit - statuses in §0.2)
 
 ### 4.1 Security & honesty (`SEC`)
 
@@ -124,7 +124,7 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 | SEC-1 | **Critical** | No encryption at rest; marketing says otherwise | `sqlite-setup.ts:35-40` writes `db.export()` raw; grep for `crypto|subtle|bcrypt|pbkdf|argon` → 0 hits; claims in §3 | ROADMAP 0.1 (reword) → 2.* (implement) |
 | SEC-2 | **Critical** | Passwords stored and compared in plaintext | `AuthContext.tsx:125` (`WHERE … password = ?`), `:140` (INSERT) | 2.* |
 | SEC-3 | High | Session = `localStorage.user_id`, restored with no password; closing the tab leaves the vault unlocked indefinitely; setting `user_id` in the console unlocks; lock timer only lives in the open page; no lock on tab hidden/closed | `AuthContext.tsx:47-57`, `:76-121` | 2.4 |
-| SEC-4 | High | Unpinned third-party script (`@main`) executes with full origin access (IndexedDB, localStorage, DOM) inside a financial app. **Audit of the content as fetched 2026-11-11:** 14,427 bytes, sha256 `36c89cebf8091a1f780f7e2d21dbf4215989fe314e8efee743aef7980b69abcf`; it defines a shadow-DOM "habibullah-launcher" widget listing 11 portfolio links, copies a URL to clipboard on click, `@import`s Google Fonts; **no fetch/XHR/storage access/eval** — benign today, but it is mutable (jsDelivr `@main` is a moving ref) so whoever controls that repo can ship code that reads the vault | `index.html:23-25` | 0.4 |
+| SEC-4 | High | Unpinned third-party script (`@main`) executes with full origin access (IndexedDB, localStorage, DOM) inside a financial app. **Audit of the content as fetched 2026-11-11:** 14,427 bytes, sha256 `36c89cebf8091a1f780f7e2d21dbf4215989fe314e8efee743aef7980b69abcf`; it defines a shadow-DOM "habibullah-launcher" widget listing 11 portfolio links, copies a URL to clipboard on click, `@import`s Google Fonts; **no fetch/XHR/storage access/eval** - benign today, but it is mutable (jsDelivr `@main` is a moving ref) so whoever controls that repo can ship code that reads the vault | `index.html:23-25` | 0.4 |
 | SEC-5 | Medium | Other third-party requests leak IP/UA and break "zero network": Google Fonts `@import`, GitHub avatar. No CSP / security headers | `index.css:1`, `About.tsx:28`, `vercel.json` | 0.4, 2.8 |
 | SEC-6 | Medium | `lockVault()` doesn't purge memory: `dbInstance` stays loaded; `QueryClient` cache is never cleared | `AuthContext.tsx:165-174`, `sqlite-setup.ts:7`, `App.tsx:18` | 2.4 |
 | SEC-7 | Medium | Lock screen exposes unauthenticated **Register**, **Destructive Reset**, and `demo/demo` one-click credentials; "multi-user isolation" is only `WHERE user_id=?` over one shared unencrypted file | `Login.tsx:105-188` | 2.1 (D2), 3.9, 5.1 |
@@ -134,8 +134,8 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 
 | ID | Sev | Finding | Evidence | Fix → |
 |---|---|---|---|---|
-| DATA-1 | High | `schema.sql` is dead; the runtime schema silently differs (no constraints/triggers/indexes/`spent_amount`; negative amounts, bogus types and duplicate budgets are accepted — RUN-verified) | `sqlite-setup.ts:47-85` vs `schema.sql` | 1.1 |
-| DATA-2 | High | No schema version / migrations — any schema change breaks persisted DBs | `sqlite-setup.ts:19-26` | 1.1 |
+| DATA-1 | High | `schema.sql` is dead; the runtime schema silently differs (no constraints/triggers/indexes/`spent_amount`; negative amounts, bogus types and duplicate budgets are accepted - RUN-verified) | `sqlite-setup.ts:47-85` vs `schema.sql` | 1.1 |
+| DATA-2 | High | No schema version / migrations - any schema change breaks persisted DBs | `sqlite-setup.ts:19-26` | 1.1 |
 | DATA-3 | High | Multi-tab last-writer-wins: each tab holds its own in-memory copy and overwrites the whole blob on every save; no `BroadcastChannel`/Web Locks | `saveDb()` `:35-40` | 1.5 |
 | DATA-4 | High | Import is destructive and non-atomic: `DELETE` then per-row `INSERT` with no SQL transaction and no validation; a failing row leaves the in-memory DB half-replaced and the next `saveDb()` persists that state; categories/users not imported; `t.createdAt` may be undefined against `NOT NULL` | `Settings.tsx:110-148` | 1.3, 1.4 |
 | DATA-5 | Medium | `getDb()` is not single-flight: concurrent first calls (session restore, categories query, `Index.initializeDatabase`) each instantiate WASM + a new `Database`; stale-instance writes are possible | `sqlite-setup.ts:9-33` | 1.2 |
@@ -148,10 +148,10 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 
 | ID | Sev | Finding | Evidence |
 |---|---|---|---|
-| BUG-1 | High | **Saved theme is not applied on startup** — `useTheme` is mounted only in Settings, so reload → default dark until you open Settings | `Settings.tsx:77`; `useTheme.ts:202-204` |
+| BUG-1 | High | **Saved theme is not applied on startup** - `useTheme` is mounted only in Settings, so reload → default dark until you open Settings | `Settings.tsx:77`; `useTheme.ts:202-204` |
 | BUG-2 | High | **Mixed currencies on one screen**: Settings default is BDT, but Ledger, Budgets (also a literal `$`), RecentTransactions and CategoryChart hard-code USD (visible in `public/s-overview.png`: stat cards "BDT 929,300", donut legend "$22,000") | `Ledger.tsx:76`, `Budgets.tsx:39,164`, `RecentTransactions.tsx:23`, `CategoryChart.tsx:37` |
 | BUG-3 | High | **Budget `period` is ignored**: progress is always the *current month's* category spend; weekly/yearly budgets are wrong; duplicate budgets for the same category/period are allowed | `Budgets.tsx:101-105`; runtime schema has no UNIQUE |
-| BUG-4 | Medium | `tsc` fails (`AuthContext.tsx:92`) while `vite build` passes — typecheck is not part of any script | baseline |
+| BUG-4 | Medium | `tsc` fails (`AuthContext.tsx:92`) while `vite build` passes - typecheck is not part of any script | baseline |
 | BUG-5 | Medium | Ledger renders every row with `delay: index*0.02` (1,000 rows ⇒ the last appears after 20 s); no pagination/virtualisation | `Ledger.tsx:281-286` |
 | BUG-6 | Low | Destructive actions without confirm/undo: single transaction delete, budget delete | `Ledger.tsx:107-110`, `Budgets.tsx:92-99` |
 | BUG-7 | Low | Copy bug: "Your vault will automatically lock after **auto-lock is disabled** of inactivity." | `Settings.tsx:283` |
@@ -170,7 +170,7 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 | DEBT-5 | **Two toast systems** mounted together (Radix + sonner). |
 | DEBT-6 | **Bundle:** single 344 kB-gzip chunk; WASM and all routes load eagerly. |
 | DEBT-7 | **Branding find-replace artefacts:** localStorage keys with spaces (`Ledger Tracker-theme`), export file name `Ledger Tracker-backup-….json`, `package.json` name `vite_react_shadcn_ts`, hard-coded `appVersion: '1.0.0'`. |
-| DEBT-8 | **Tooling:** pnpm 12 `ERR_PNPM_IGNORED_BUILDS` (needs an `onlyBuiltDependencies` allowlist — decision for the owner, it edits project config); no `packageManager`/`engines`; `host: "::"` dev server exposed to LAN; browserslist data 11 months old. |
+| DEBT-8 | **Tooling:** pnpm 12 `ERR_PNPM_IGNORED_BUILDS` (needs an `onlyBuiltDependencies` allowlist - decision for the owner, it edits project config); no `packageManager`/`engines`; `host: "::"` dev server exposed to LAN; browserslist data 11 months old. |
 | DEBT-9 | **SEO/sharing:** no `og:image`, canonical, manifest, theme-color; sitemap lists gated routes and omits the public one; `/` is not public. |
 | DEBT-10 | **Docs drift:** README contradicts the code (§3). |
 
@@ -186,7 +186,7 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 ## 6. Open questions the code can't answer
 
 1. Is `ledger.habibullah.dev` still the live deployment, and is any hosting-level analytics/CDN configured? (Affects how the privacy copy must be worded.)
-2. Do real users already hold data in the plaintext format? (Decides how careful the encryption migration must be — see ROADMAP 2.6.)
+2. Do real users already hold data in the plaintext format? (Decides how careful the encryption migration must be - see ROADMAP 2.6.)
 3. Should the product keep multiple usernames in one vault, or become one-vault-per-person? (ROADMAP decision D2.)
 
 ## 7. Verification log
@@ -201,4 +201,4 @@ Everything else (design, features, performance, SEO) is improvable, but those th
 | Unused shadcn primitives / deps | scripted import scan | **RUN** |
 | Auth, lock, import, budgets, currency, theme, date logic | full read of the files cited | **READ** (not exercised in a browser) |
 | Current look & the USD/BDT mix | viewed `public/s-overview.png`, `s-ledger.png`, `s-settings.png` (these screenshots pre-date the vault work, so *wording* in them is stale; layout/visual language still matches the code) | **READ** |
-| Not done | no browser E2E, no Lighthouse/axe run, no live-site check, no pen-test, no review of `ui/*` primitives beyond usage | — |
+| Not done | no browser E2E, no Lighthouse/axe run, no live-site check, no pen-test, no review of `ui/*` primitives beyond usage | - |

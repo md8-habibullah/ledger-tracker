@@ -1,4 +1,4 @@
-# Architecture — how the system works today
+# Architecture - how the system works today
 
 > **Status:** describes the code as rebuilt on 2026-11-11 (uncommitted working tree on top of `8b21342`). The previous architecture (plaintext single-blob database, `AuthContext`, multi-user table) no longer exists; its audit is kept as history in [CURRENT-STATE.md](./CURRENT-STATE.md).
 > **Scope:** the system **as built**. Where public copy and code disagree, the code wins and the copy is a bug. Re-check with `grep -n` if a file has moved.
@@ -74,7 +74,7 @@ There is **no React Query cache and no session persistence**. Locking closes the
 
 ## 5. Vault lifecycle (`src/vault/`)
 
-- `service.ts` — `VaultService` (one per tab, from `runtime.ts`). Public API: `list`, `create`, `unlock`, `unlockWithRecovery`, `lock`, `openDemo`, `save`, `changePassword`, `rotateRecoveryKey`, `rename`, `exportBackup`, `importBackup`, `deleteVault`, `eraseAll`, `detectLegacy`, `migrateLegacyUser`, `deleteLegacy`, `inspect`, `settings`, `database()`, `getSnapshot`/`subscribe`.
+- `service.ts` - `VaultService` (one per tab, from `runtime.ts`). Public API: `list`, `create`, `unlock`, `unlockWithRecovery`, `lock`, `openDemo`, `save`, `changePassword`, `rotateRecoveryKey`, `rename`, `exportBackup`, `importBackup`, `deleteVault`, `eraseAll`, `detectLegacy`, `migrateLegacyUser`, `deleteLegacy`, `inspect`, `settings`, `database()`, `getSnapshot`/`subscribe`.
 - `VaultSnapshot` = `{ status: locked | unlocked, meta, ephemeral, dataVersion }`. `dataVersion` increments after each successful save.
 - **Save:** serialised and coalesced. Every write path ends in `VaultService.save()`. `db.export()` in sql.js **resets PRAGMAs**, so `foreign_keys=ON` is re-applied after every export.
 - **Single writer:** `navigator.locks.request("ledger-tracker:<id>", { ifAvailable: true })`; if another tab holds it, `VaultBusyError`.
@@ -87,13 +87,13 @@ There is **no React Query cache and no session persistence**. Locking closes the
 ## 6. Data layer (`src/db/`)
 
 - **Schema v1** (`schema.ts`, applied by `migrate()` using `PRAGMA user_version`; refuses a newer version with `FutureSchemaError`):
-  - `meta(key, value)` — vault settings such as currency.
+  - `meta(key, value)` - vault settings such as currency.
   - `categories(id, name 1–60, icon, color hex, kind income|expense, archived, UNIQUE(kind,name))`
   - `transactions(id, kind, amount_minor > 0, category_id FK, note ≤ 500, occurred_on GLOB local date, created_at)`
   - `budgets(id, category_id FK, amount_minor > 0, period weekly|monthly|yearly, UNIQUE(category_id, period))`
   - No users table. Foreign keys are enforced.
-- `sql.ts` — thin typed wrapper and `withTransaction`, which **nests** via `SAVEPOINT sp_N` so a repository function can run inside `useMutate` without a nested `BEGIN` failing.
-- `repo.ts` — all reads and writes (typed rows, zod-checked where data comes from outside the app (`repo.ts` and `crypto/envelope.ts` use zod)), including `restoreTransactions` for undo. Rules: bound parameters only, no identifiers from input.
+- `sql.ts` - thin typed wrapper and `withTransaction`, which **nests** via `SAVEPOINT sp_N` so a repository function can run inside `useMutate` without a nested `BEGIN` failing.
+- `repo.ts` - all reads and writes (typed rows, zod-checked where data comes from outside the app (`repo.ts` and `crypto/envelope.ts` use zod)), including `restoreTransactions` for undo. Rules: bound parameters only, no identifiers from input.
 - **Money** (`lib/money.ts`): integer minor units; `parseMinor`, `formatMoney`, lakh/crore grouping for BDT (`en-IN`, `৳`), true minus sign. **Dates** (`lib/dates.ts`): local calendar-date strings `YYYY-MM-DD`, weeks start Saturday, `todayLocal`, `formatDateTime`. No `toISOString()` for "today".
 - **Other helpers:** `stats.ts` (cash flow, category totals, budget progress), `insights.ts` (plain-language notes), `quickEntry.ts` (the one-line parser), `csv.ts`, `icons.ts`, `password.ts`.
 
@@ -101,13 +101,13 @@ There is **no React Query cache and no session persistence**. Locking closes the
 
 | Route | Component | Guard |
 |---|---|---|
-| `/` | `Landing` — hero and a real "seal a sample" demo (`components/landing/ProveIt.tsx`; the live network-request panel was removed on the owner's request, 2026-11-12) | public |
+| `/` | `Landing` - hero and a real "seal a sample" demo (`components/landing/ProveIt.tsx`; the live network-request panel was removed on the owner's request, 2026-11-12) | public |
 | `/security`, `/case-study` | `Security`, `CaseStudy` | public |
 | `/create` | 3-step wizard: name and currency → password → recovery key with mandatory acknowledgement | public |
 | `/unlock` | vault picker, password, recovery mode, restore from backup, typed-`ERASE` confirmation, backoff after failures | public |
 | `/migrate`, `/demo` | legacy import; open demo vault | public |
 | `/app`, `/app/entries`, `/app/budgets`, `/app/categories`, `/app/settings/:tab` (`appearance` \| `security` \| `data` \| `about`) | pages | `RequireVault` (renders `AppShell` + `<Outlet/>` only when unlocked, else redirects to `/unlock`) |
-| `/landing`, `/about`, `/login`, `/ledger`, `/budgets`, `/settings` | `<Navigate>` redirects from the previous version | — |
+| `/landing`, `/about`, `/login`, `/ledger`, `/budgets`, `/settings` | `<Navigate>` redirects from the previous version | - |
 
 - **Layouts:** `PublicLayout` (header, footer, skip link) and `AppShell` (floating glass dock ≥ md, floating bottom bar on phones, glass status pill with seal, vault name and lock countdown, `N` for a new entry, `EntrySheetProvider`). The dock is `components/layout/Sidebar.tsx`, mounted only from md up: nav links with live badges, a month card, a budget watch, a theme switch, Lock, and a collapsible icon rail. Its model is `sidebarModel.ts` (`NAV`, `useGoShortcuts` for `g` + letter, `useSidebarCollapsed`, `useSidebarSummary`); the numbers come from the pure, tested `src/lib/sidebarSummary.ts` using the same stats and budget progress as the Overview. `PublicLayout` is a floating glass pill header with a microprint footer. `Aurora` and `GlowTracker` are mounted once in `App.tsx`.
 - **Data hooks:** `useLedger()` (synchronous snapshot of categories/transactions/budgets plus derived maps and `today`), `useMutate()` (runs a repository write in a transaction, saves, toasts), `useMoney()`, `useCurrencyInfo()`.

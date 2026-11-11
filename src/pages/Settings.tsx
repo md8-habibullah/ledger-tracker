@@ -99,7 +99,7 @@ function Appearance() {
         >
           <SelectTrigger aria-label="Currency"><SelectValue /></SelectTrigger>
           <SelectContent>
-            {compatible.map((c) => <SelectItem key={c.code} value={c.code}>{c.code} — {c.name} ({c.symbol})</SelectItem>)}
+            {compatible.map((c) => <SelectItem key={c.code} value={c.code}>{c.code} - {c.name} ({c.symbol})</SelectItem>)}
           </SelectContent>
         </Select>
       </Row>
@@ -358,7 +358,7 @@ function DataTab() {
       <Row title="Encrypted backup" description="A file you can keep anywhere. It is as safe as the vault itself: opening it needs your password or recovery key. Restore it from the lock screen.">
         <Button variant="outline" className="gap-2" onClick={() => void backup()} disabled={demo}><Download className="h-4 w-4" aria-hidden />Download backup</Button>
       </Row>
-      <Row title="Spreadsheet export" description="All entries as a CSV file. This file is NOT encrypted — store it carefully.">
+      <Row title="Spreadsheet export" description="All entries as a CSV file. This file is NOT encrypted - store it carefully.">
         <Button variant="outline" className="gap-2" onClick={csv}><FileDown className="h-4 w-4" aria-hidden />Export all entries (CSV)</Button>
       </Row>
       <Row title="Storage" description="Browsers can clear site data under pressure. Asking for persistent storage lowers that risk.">

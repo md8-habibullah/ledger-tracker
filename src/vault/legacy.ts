@@ -28,7 +28,7 @@ export interface LegacyReport {
   budgets: number;
   categoriesAdded: number;
   skipped: { reason: string; count: number }[];
-  /** Σ round(amount × 100) of the rows we imported — compared against the new vault to prove nothing was lost. */
+  /** Σ round(amount × 100) of the rows we imported - compared against the new vault to prove nothing was lost. */
   importedMinor: { income: number; expense: number };
 }
 

@@ -1,5 +1,5 @@
 /**
- * Money is stored and computed as INTEGER MINOR UNITS (paisa, cents) — never floats.
+ * Money is stored and computed as INTEGER MINOR UNITS (paisa, cents) - never floats.
  * All display and parsing goes through this file; no `$`/`USD` literals anywhere else.
  */
 

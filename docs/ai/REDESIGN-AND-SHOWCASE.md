@@ -14,7 +14,7 @@ This document contains: (1) an honest assessment of the current design, (2) the 
 
 **The most important point:** the app currently describes itself as "military-grade encrypted", but nothing is encrypted and passwords are stored in plaintext. A client's technical reviewer who opens DevTools → Application → IndexedDB will see this immediately, so showcasing the app before fixing it would reduce trust instead of building it. Once fixed, the same project becomes a strong portfolio piece, because the gap between *claiming* and *proving* is exactly what clients look for.
 
-**Proposed order:** (0) truthful copy + cleanup → (1) fix the data layer → (2) real encryption → (3) new design system and page redesign → (4) new features → (5) showcase packaging (landing, demo, case study, SEO, video). A faster "Honest MVP" path also exists — see [ROADMAP.md](./ROADMAP.md).
+**Proposed order:** (0) truthful copy + cleanup → (1) fix the data layer → (2) real encryption → (3) new design system and page redesign → (4) new features → (5) showcase packaging (landing, demo, case study, SEO, video). A faster "Honest MVP" path also exists - see [ROADMAP.md](./ROADMAP.md).
 
 ---
 
@@ -26,7 +26,7 @@ This document contains: (1) an honest assessment of the current design, (2) the 
 | **Client's technical reviewer** | Real engineering: tests, security done right, clean repo, honest limits. | Claims that DevTools disproves; unpinned third-party scripts; no tests/CI. |
 | **End user** (privacy-minded, Bangladesh-first) | Track money quickly, in BDT/Bangla, offline, nothing leaves my device. | Friction on every entry, data loss, no backup, confusing lock. |
 
-**Showcase success criteria (measurable, to be produced by CI — never typed by hand):** Lighthouse ≥ 95 (mobile) on Performance/Accessibility/Best-practices/SEO for the landing page; axe: 0 critical/serious; LCP < 2.0 s on a mid-range phone profile; initial JS ≤ 170 kB gzip (today 344 kB); full E2E green incl. offline; zero network requests from app code after load (CSP-enforced).
+**Showcase success criteria (measurable, to be produced by CI - never typed by hand):** Lighthouse ≥ 95 (mobile) on Performance/Accessibility/Best-practices/SEO for the landing page; axe: 0 critical/serious; LCP < 2.0 s on a mid-range phone profile; initial JS ≤ 170 kB gzip (today 344 kB); full E2E green incl. offline; zero network requests from app code after load (CSP-enforced).
 
 **The one idea:** *the claim is the proof.* Every promise the product makes is something a visitor can verify in the page itself (see the "Prove it" panel, §5.1). That is the memorable thing; everything else stays quiet and disciplined.
 
@@ -34,15 +34,15 @@ This document contains: (1) an honest assessment of the current design, (2) the 
 
 From `public/s-*.png` (older UI, same visual language) and the code:
 
-* **Looks like the default dark SaaS dashboard**: navy background, cyan→emerald gradient, translucent "glass" cards of identical radius, glow shadows, a gradient-accented full stop after every title (`Ledger.`), fade-and-slide entrances everywhere. It is competent but anonymous — nothing says *ledger*, *vault* or *Bangladesh*.
+* **Looks like the default dark SaaS dashboard**: navy background, cyan→emerald gradient, translucent "glass" cards of identical radius, glow shadows, a gradient-accented full stop after every title (`Ledger.`), fade-and-slide entrances everywhere. It is competent but anonymous - nothing says *ledger*, *vault* or *Bangladesh*.
 * **Four identical stat cards** and a donut chart carry the Overview; the donut is the weakest way to compare 3–12 categories.
-* **Two giant −/+ buttons** dominate the top of the dashboard but a real entry needs 3 more fields — high visual weight, low efficiency.
-* **Inconsistent numbers** (BDT in cards, `$` in lists, 0-decimals vs 2-decimals) — the fastest way to look unprofessional in a finance product (BUG-2, DATA-7).
+* **Two giant −/+ buttons** dominate the top of the dashboard but a real entry needs 3 more fields - high visual weight, low efficiency.
+* **Inconsistent numbers** (BDT in cards, `$` in lists, 0-decimals vs 2-decimals) - the fastest way to look unprofessional in a finance product (BUG-2, DATA-7).
 * **Five colour themes** (dark/light/ocean/forest/sunset) dilute the identity and multiply QA; the saved theme isn't even applied on load (BUG-1).
 * **Landing/Login** use a different palette and typography feel (slate, all-mono) from the app.
 * **No mobile-first interaction** (sidebar sheet only), no keyboard flow, no command palette, no empty-state guidance.
 
-## 3. Design direction — "Banknote"
+## 3. Design direction - "Banknote"
 
 > **Superseded direction (2026-11-11).** The first redesign ("Green-bar Ledger": ruled pages, banding, no glows, brass seal) was built and verified, but the owner found it flat and asked for an eye-catching, next-generation look. This section now describes what is built. The old direction's rules ("no gradients as decoration, no glows") no longer apply; its accessibility, figures-first and "verify, don't claim" principles do.
 
@@ -157,17 +157,17 @@ The desktop dock was five links and a Lock button with a large empty gap. It now
 Short screens (under 760 px tall) tighten the link height and gaps so the cards keep a usable scroll area; the links and the Lock button never scroll away. Not built, on purpose: a "hide amounts" toggle (amounts are formatted in many places, including chart axes and insight sentences, so a partial hide would overstate privacy) and a backup reminder (the vault does not record when a backup was last exported; that would need a stored setting, so ask first).
 
 
-### 3.4 Design system spec (what to build — roadmap 3.1)
+### 3.4 Design system spec (what to build - roadmap 3.1)
 
 * **Tokens** as CSS variables (HSL triplets kept so Tailwind/shadcn keep working): colour roles above × 2 themes (`data-theme="paper|vault"` + system default), `--radius-sm/md/lg/xl`, `--glass-*`, `--foil-1..7`, spacing on a 4 px base, type scale, motion durations/easing, focus ring (2 px outline in the theme's primary colour, visible on every interactive element).
-* **Replace the 5-theme system** with Pearl (id `paper`) / Vault / System. Apply the theme **before first paint** (a tiny *blocking external* script, e.g. `/theme-init.js`, or an inline script allowed by a CSP hash — an un-hashed inline script would violate the strict CSP in checklist item H) plus a root provider — fixes BUG-1 and removes the flash.
+* **Replace the 5-theme system** with Pearl (id `paper`) / Vault / System. Apply the theme **before first paint** (a tiny *blocking external* script, e.g. `/theme-init.js`, or an inline script allowed by a CSP hash - an un-hashed inline script would violate the strict CSP in checklist item H) plus a root provider - fixes BUG-1 and removes the flash.
 * **New/rebuilt components:** `AppShell`, `RuleSection` (a glass panel with a heading; replaces `Card` in app screens), `Money` (sign, red ink, tabular, locale-aware), `LedgerTable` (row dividers, sticky header, keyboard row navigation, virtualised), `EntrySheet` (add/edit; replaces dialog on mobile), `QuickEntryBar`, `StatementStrip`, `RankedBars`, `CashFlowChart`, `Sparkline`, `Seal` (lock indicator + unlock animation), `EmptyState`, `CommandPalette` (cmdk is already a dependency), `ConfirmUndo` (toast with Undo), `DateField` (local-date safe), `CategoryChip`, `ProgressRule` (glowing budget gauge with the status spelled out), `LocaleSwitch`.
 * **One toast system:** sonner only (delete the Radix toaster).
 * **Delete unused primitives** (31) and re-add via the shadcn CLI only when needed.
 * **Money & number display rules:** always the vault currency; 2 fraction digits for currencies with minor units (never silently 0); true minus `−` (U+2212); outflows in Red ink, inflows in Ink; right-aligned tabular. A *Display* setting chooses **digits** (0–9 / ০–৯) × **grouping** (international 1,234,567 / lakh-crore 12,34,567); verify `Intl` output (`en-BD`, `bn-BD`, `en-IN`) in target browsers.
 * **Charts:** recharts stays; style via tokens; every chart has a table fallback for screen readers; money in is `--chart-in` (blue) and money out is `--chart-out` (coral), validated with the dataviz script; the legend and the table fallback carry identity, text never wears the series colour.
 * **Density:** Comfortable / Compact toggle (ledger users want compact).
-* **Accessibility floor (non-negotiable):** WCAG 2.1 AA contrast, full keyboard operation (rows focusable, sheet/dialog focus-trap — Radix gives this), visible focus, 44 px touch targets, `aria-label`s on icon buttons, reduced-motion, no colour-only meaning (outflow also has a `−` sign).
+* **Accessibility floor (non-negotiable):** WCAG 2.1 AA contrast, full keyboard operation (rows focusable, sheet/dialog focus-trap - Radix gives this), visible focus, 44 px touch targets, `aria-label`s on icon buttons, reduced-motion, no colour-only meaning (outflow also has a `−` sign).
 * **Voice:** plain, active, sentence case; buttons say what happens; errors say what to do.
 
 | Today | Use instead |
@@ -189,66 +189,66 @@ Why: `/` becomes a public, indexable marketing URL (today `/` is the gated dashb
 
 ## 5. Page-by-page plan
 
-Legend — **Keep / Change / New**. IDs point to findings in CURRENT-STATE.
+Legend - **Keep / Change / New**. IDs point to findings in CURRENT-STATE.
 
-### 5.1 Landing (`/`) — *public showcase hero* (today: `/landing`, dark mono page)
+### 5.1 Landing (`/`) - *public showcase hero* (today: `/landing`, dark mono page)
 
 * **Change:** adopt the new tokens/type; move to `/`; replace every unverifiable claim; rewrite FAQ truthfully (forgot password → recovery key or erase; what it does **not** protect against); remove "Military-Grade".
-* **New hero = the Prove-it panel:** left, a plain-language promise + two actions (*Open the demo vault* / *Create your vault*); right, a live panel showing (a) **network activity since load** (from `PerformanceObserver` resource entries; the initial site files are listed separately; CSP `connect-src 'self'` is named as the real enforcement, because resource timing does not see WebSockets), (b) **what is stored on this device**: the first bytes of the vault blob as hex, next to the header a plaintext SQLite file would start with (`53 51 4C 69 74 65 20 66…` = "SQLite f…") so the viewer can see the stored bytes are ciphertext, (c) a one-click "airplane mode" instruction/test. Requires F-1 (real encryption) — until then the panel must not ship.
+* **New hero = the Prove-it panel:** left, a plain-language promise + two actions (*Open the demo vault* / *Create your vault*); right, a live panel showing (a) **network activity since load** (from `PerformanceObserver` resource entries; the initial site files are listed separately; CSP `connect-src 'self'` is named as the real enforcement, because resource timing does not see WebSockets), (b) **what is stored on this device**: the first bytes of the vault blob as hex, next to the header a plaintext SQLite file would start with (`53 51 4C 69 74 65 20 66…` = "SQLite f…") so the viewer can see the stored bytes are ciphertext, (c) a one-click "airplane mode" instruction/test. Requires F-1 (real encryption) - until then the panel must not ship.
 * **New sections (all real, no stock art):** "Verify it yourself" (3 facts × the exact DevTools steps), product tour built from live mini-components with demo data, "Built to be inspected" (CI-generated test/bundle/Lighthouse numbers + licence + repo link), honest "Limits" block, footer with agency credit and "Start a project" link (plain external `<a>`).
 * **Accept:** Lighthouse ≥ 95 mobile; no third-party requests; every sentence is true on the day it ships; works at 360 px width.
 
-### 5.2 Create vault (`/create`) — *new wizard* (today: Register tab + "Initialize Local Vault")
+### 5.2 Create vault (`/create`) - *new wizard* (today: Register tab + "Initialize Local Vault")
 
 * 3 steps: name & currency (BDT default) → master password (strength meter, 12+ chars guidance, show/hide) → **recovery key** (download/print, "I saved it" gate). Plain explanation that there is no reset by design.
 * **Accept:** password never stored; wizard cannot finish without choosing to save/skip recovery key with explicit consequence text; keyboard + screen-reader complete.
 
-### 5.3 Unlock (`/unlock`) — *replaces `/login`*
+### 5.3 Unlock (`/unlock`) - *replaces `/login`*
 
 * **Change:** one field (password) + vault name; **Seal** animation on success (the single orchestrated moment); failed-attempt backoff; "Use recovery key"; secondary text link "Erase this vault" (confirm flow kept: type `ERASE`, 10 s hold).
 * **Remove:** Register tab on the lock screen, `demo/demo` credentials (SEC-7).
 * **Accept:** no `localStorage` session; closing the tab = locked (key lives only in memory).
 
-### 5.4 Overview (`/app`) — today `Index.tsx`
+### 5.4 Overview (`/app`) - today `Index.tsx`
 
 * **Change:** replace 4 cards with one **StatementStrip** (Balance · This month in/out · Net · Savings rate, each with a 6-month sparkline); replace donut with **RankedBars** (top categories, inline amounts, vs last month); area chart → **CashFlowChart** (paired in/out bars per month with ruled grid) + tooltip table; heading becomes informational ("November so far · 11 days left").
 * **Change:** QuickEntry becomes a persistent one-line **QuickEntryBar** (type · amount · category · note · date, Enter to save, `N` to focus) with natural-language parsing (§6 F-9).
-* **New:** *Upcoming* (next recurring items), *Insights* (2–3 locally computed sentences: "Food is 18 % above October"), *Budget watch* (top 3 at risk), month selector (all totals respect it — BUG-10).
+* **New:** *Upcoming* (next recurring items), *Insights* (2–3 locally computed sentences: "Food is 18 % above October"), *Budget watch* (top 3 at risk), month selector (all totals respect it - BUG-10).
 * **Accept:** one currency everywhere; first meaningful paint with 5,000 entries < 300 ms after unlock; empty state guides first entry.
 
-### 5.5 Entries (`/app/entries`) — today `Ledger.tsx`
+### 5.5 Entries (`/app/entries`) - today `Ledger.tsx`
 
-* **Change:** `LedgerTable` — banded rows, sticky header, right-aligned tabular amounts, **virtualised** (BUG-5), no per-row stagger, focusable rows with Enter = details, `E` edit, `Del` delete + **Undo toast** (BUG-6), bulk bar appears on selection.
+* **Change:** `LedgerTable` - banded rows, sticky header, right-aligned tabular amounts, **virtualised** (BUG-5), no per-row stagger, focusable rows with Enter = details, `E` edit, `Del` delete + **Undo toast** (BUG-6), bulk bar appears on selection.
 * **New:** date-range + amount-range + account + tag filters; **saved views**; column sort; group-by (day/category); inline edit of category/description; split entry; attachments (§6); running balance column; CSV export of the current view; calendar view toggle.
 * **Accept:** 10,000 rows scroll at 60 fps; every action reachable by keyboard; same currency rules as Overview.
 
-### 5.6 Budgets (`/app/budgets`) — today `Budgets.tsx`
+### 5.6 Budgets (`/app/budgets`) - today `Budgets.tsx`
 
 * **Change:** honour `period` (weekly/monthly/yearly windows; BUG-3); **ProgressRule** gauges; unique per (category, period); derived spend via SQL query (no trigger); thresholds at 80 %/100 % produce an in-app notice (the README promised notifications); confirm on delete.
 * **New:** rollover (carry unused/over), budget templates ("50/30/20"), month-by-month history for a budget, projected end-of-period spend ("at this pace you'll hit 112 %").
 * **Accept:** a weekly budget ignores last month's spending (regression test).
 
-### 5.7 Accounts (`/app/accounts`) — *new*
+### 5.7 Accounts (`/app/accounts`) - *new*
 
 * Cash, bank, mobile-wallet, card, savings accounts (generic types; **no integrations claimed**); per-account balance; **transfers** between accounts (two linked entries, excluded from income/expense stats); opening balance; archive account.
 
-### 5.8 Recurring (`/app/recurring`) — *new*
+### 5.8 Recurring (`/app/recurring`) - *new*
 
-* Rules (daily/weekly/monthly/yearly/custom), next-run preview, auto-create due entries **on unlock** (no background process exists in a local app — state that clearly), "mark as paid" flow, subscription list with monthly/annual cost, flag unusual increases.
+* Rules (daily/weekly/monthly/yearly/custom), next-run preview, auto-create due entries **on unlock** (no background process exists in a local app - state that clearly), "mark as paid" flow, subscription list with monthly/annual cost, flag unusual increases.
 
-### 5.9 Reports (`/app/reports`) — *new*
+### 5.9 Reports (`/app/reports`) - *new*
 
 * Monthly statement (printable, client-side PDF via print stylesheet), category trends, cash-flow, net worth over time, income sources, savings-rate history, year-in-review; each with table fallback and CSV export.
 
-### 5.10 Goals & Dena-Paona (`/app/goals`) — *new, Tier B*
+### 5.10 Goals & Dena-Paona (`/app/goals`) - *new, Tier B*
 
-* Savings goals with target/date/auto-contribution suggestion. **Dena-Paona** (money lent/borrowed, per person, with partial repayments and due dates) — a ledger-native, locally relevant feature (validate demand before building).
+* Savings goals with target/date/auto-contribution suggestion. **Dena-Paona** (money lent/borrowed, per person, with partial repayments and due dates) - a ledger-native, locally relevant feature (validate demand before building).
 
-### 5.11 Categories (`/app/categories`) — *new, moved out of Settings*
+### 5.11 Categories (`/app/categories`) - *new, moved out of Settings*
 
 * Add/rename/recolour/re-icon/archive; merge categories; per-type; **link entries by id** (DATA-9); the stored `icon` finally gets rendered; keyword rules for auto-categorising imported rows.
 
-### 5.12 Settings (`/app/settings/:tab`) — today one 549-line page
+### 5.12 Settings (`/app/settings/:tab`) - today one 549-line page
 
 * Split: **Appearance** (Paper/Vault/System, density, language) · **Security** (auto-lock incl. "lock when tab hidden", change password, recovery key, WebAuthn unlock (optional), view-security-status panel) · **Data** (encrypted backup/restore, CSV/JSON export, import wizard with preview, storage usage, request persistent storage, erase) · **Region** (currency, digits, grouping, first day of week, fiscal month start) · **About** (version, licence, source, agency credit).
 * **Fix:** copy bug (BUG-7); import becomes validate → preview → atomic apply (DATA-4).
@@ -261,7 +261,7 @@ Legend — **Keep / Change / New**. IDs point to findings in CURRENT-STATE.
 
 * **AppShell:** slim left rail (labels ≥ 1280 px), top bar with **vault status** (foil seal + "Auto-locks in 12:40"), command palette trigger (⌘K / Ctrl K), `+ New entry` (`N`), month selector. **Mobile:** bottom tab bar (Overview · Entries · Budgets · Reports · More) + FAB for new entry; sheets instead of centred dialogs.
 * **Keyboard map:** `N` new, `/` search, `G O/E/B/R` go-to, `?` shortcut sheet, `Esc` close.
-* **404:** useful (search + recent routes). **Offline banner:** none needed (works offline) — show "Offline-ready" once the service worker has cached the shell.
+* **404:** useful (search + recent routes). **Offline banner:** none needed (works offline) - show "Offline-ready" once the service worker has cached the shell.
 
 ## 6. Feature catalog (new & changed)
 
@@ -272,12 +272,12 @@ Value: ★ = user value · ◆ = showcase impact.
 | F-1 | **Real vault encryption** (KDF + AES-256-GCM, memory-only key, recovery key, encrypted backup) | ★★★ | ◆◆◆ | XL | Phase 1 |
 | F-2 | **Prove-it panel** (live network counter removed 2026-11-12 on the owner's request; the seal-a-sample demo remains) | ★ | ◆◆◆ | M | F-1 |
 | F-3 | **Demo vault** (realistic seeded BDT data, separate storage key, one-click reset, banner) | ★ | ◆◆◆ | M | Phase 1 |
-| F-4 | **PWA**: installable, offline cold-start, `storage.persist()` | ★★ | ◆◆◆ | M | — |
-| F-5 | **Design system + Paper/Vault themes**, applied pre-paint | ★★ | ◆◆◆ | L | — |
+| F-4 | **PWA**: installable, offline cold-start, `storage.persist()` | ★★ | ◆◆◆ | M | - |
+| F-5 | **Design system + Paper/Vault themes**, applied pre-paint | ★★ | ◆◆◆ | L | - |
 | F-6 | **Command palette + keyboard shortcuts** | ★★ | ◆◆ | M | F-5 |
 | F-7 | **Accounts & transfers** | ★★★ | ◆◆ | L | Phase 1 |
 | F-8 | **Recurring transactions & subscriptions** | ★★★ | ◆◆ | L | F-7 |
-| F-9 | **Natural-language quick-add** ("rickshaw 80 yesterday") — local parser, no AI/network | ★★ | ◆◆◆ | M | F-5 |
+| F-9 | **Natural-language quick-add** ("rickshaw 80 yesterday") - local parser, no AI/network | ★★ | ◆◆◆ | M | F-5 |
 | F-10 | **Budgets v2** (periods, rollover, thresholds, projection) | ★★★ | ◆◆ | M | Phase 1 |
 | F-11 | **Reports** (statement, trends, net worth, year-in-review) | ★★★ | ◆◆ | L | F-7 |
 | F-12 | **CSV import wizard** (column mapper, dedupe, preview, undo) & CSV/JSON export | ★★★ | ◆◆ | L | Phase 1 |
@@ -302,43 +302,43 @@ Rule of thumb for scope: **F-1, F-2, F-3, F-4, F-5, F-13** make the showcase cre
 
 Tick in order of [ROADMAP.md](./ROADMAP.md); each line is verifiable.
 
-**A — Accessibility.** axe 0 critical/serious on every route; keyboard-only run-through recorded; contrast table committed; reduced-motion honoured; Bangla screen-reader labels.
-**B — Brand.** Decide name (keep "Ledger Tracker" or brand it; check trademark/app-store collisions — "Khata"-style names are crowded in the ledger-app space); logo/favicon set (SVG, 32/180/512 PNG), `theme-color`, one accent system, consistent voice.
-**C — Claims policy.** Every public sentence is true and checkable; claims about security are written *after* the feature ships; a "Limits" section is mandatory; nothing is called "military-grade".
-**D — Demo.** One-click demo vault with believable BDT data (salary, rent, bKash-style "mobile wallet" account type, utility bills — generic wording), banner "Demo data — stays in this browser", reset button; works with no sign-in.
-**E — Empty & error states.** Every list/chart has a guiding empty state; errors name the cause and the fix; offline/blocked-storage states handled (private mode, quota exceeded).
-**F — Fonts & assets.** Self-host Plex + Noto Sans Bengali (`@fontsource`), subset, `font-display: swap`, preload the primary; no Google Fonts; no third-party scripts, images or iframes.
-**G — GitHub repo.** README rewritten from the verified facts (live-demo badge, CI badge, GIF, honest feature list, architecture diagram, run instructions with port 8080), `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md` (Keep-a-Changelog), issue templates, topics, social preview image, licence (MIT) consistent everywhere. Use the repo-launch playbook; privacy-scrub screenshots.
-**H — Headers.** Vercel `headers`: strict CSP (`default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`), `Referrer-Policy: no-referrer`, `X-Content-Type-Options`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`. (Tailwind/Radix inline styles may need nonces/hashes — validate.)
-**I — i18n.** EN + বাংলা, locale-aware dates/numbers; keys extracted; no string concatenation.
-**J — JSON-LD & structured data.** `SoftwareApplication` for the product on the landing page; optional `Organization` for the agency (only with accurate data).
-**K — Keyboard & shortcuts.** Documented in-app (`?`), consistent, discoverable.
-**L — Lighthouse CI.** Budget enforced in CI (Perf ≥ 90 hard fail, ≥ 95 target); bundle-size budget; route-level code splitting; WASM loaded after the landing renders.
-**M — Mobile.** Designed for 360 px first; bottom tab bar; sheets; safe-area insets; 44 px targets; tested on a low-end Android profile.
-**N — Network hygiene.** Remove the jsDelivr launcher (or vendor + pin with SRI if the agency widget is wanted *on the agency site only*); remove GitHub avatar fetch; Prove-it panel reports zero.
-**O — Offline.** Service worker precaches the shell + WASM; airplane-mode test in E2E; install prompt; `navigator.storage.persist()` requested after first entry with an explanation.
-**P — Performance.** Initial JS ≤ 170 kB gz; lazy routes; lazy charts; virtualised tables; WASM streaming; no layout shift (reserve chart heights).
-**Q — Quality gates.** CI (typecheck, lint, unit, E2E, axe, Lighthouse, build) green on every push; coverage on money/date/crypto/stat code ≥ 90 %.
-**R — Recovery & backup.** Recovery key at creation; encrypted backup export/restore; backup reminder after N entries; restore tested in E2E.
-**S — SEO & social.** Public `/` indexable; unique `<title>`/description; canonical; **`og:image` / `twitter:image` 1200×630**; sitemap lists public pages only; `robots.txt` disallows `/app`; prerender or static HTML for `/`, `/security`, `/case-study` (e.g. SSG plugin) so previews/crawlers see content, not an empty shell.
-**T — Tests.** Vitest (stats, money, dates, crypto envelope, migrations, import validator) + Playwright (create → add → lock → unlock → edit → import/export → offline → erase) + axe in E2E.
-**U — UX copy.** Voice guide applied (see §3.4); microcopy reviewed in Bangla by a native speaker.
-**V — Video & visuals.** 30–45 s screen-recorded walkthrough (create vault → entry → lock → airplane mode → "nothing sent") with captions; 4 clean screenshots at 2×; animated GIF for the README; consider producing it with the HyperFrames tooling.
-**W — Website integration (agency).** Portfolio card: title, one-sentence outcome, 3 proof points, live link, video, "Read the case study". **Link out** to the demo rather than embedding it in an `<iframe>` (third-party iframes get partitioned/blocked IndexedDB and break the vault).
-**X — eXpectation-setting.** Privacy page states exactly what is and isn't collected; if the hosting domain runs analytics (configured outside this repo), say so plainly and keep the app origin free of it so the "app sends nothing" claim stays literally true.
-**Y — Year-proofing.** Dependency update cadence (Renovate/Dependabot config), Node/pnpm pinned via `packageManager`/`engines`, browserslist refresh, licence audit of fonts/deps, `SECURITY.md` contact.
-**Z — Zero-surprise launch.** Pre-launch checklist: fresh-profile run, Safari + Firefox + Chrome + Android Chrome, private-mode behaviour, storage-eviction message, 404/redirect map for old URLs, final claims review, tag `v1.0.0`.
+**A - Accessibility.** axe 0 critical/serious on every route; keyboard-only run-through recorded; contrast table committed; reduced-motion honoured; Bangla screen-reader labels.
+**B - Brand.** Decide name (keep "Ledger Tracker" or brand it; check trademark/app-store collisions - "Khata"-style names are crowded in the ledger-app space); logo/favicon set (SVG, 32/180/512 PNG), `theme-color`, one accent system, consistent voice.
+**C - Claims policy.** Every public sentence is true and checkable; claims about security are written *after* the feature ships; a "Limits" section is mandatory; nothing is called "military-grade".
+**D - Demo.** One-click demo vault with believable BDT data (salary, rent, bKash-style "mobile wallet" account type, utility bills - generic wording), banner "Demo data - stays in this browser", reset button; works with no sign-in.
+**E - Empty & error states.** Every list/chart has a guiding empty state; errors name the cause and the fix; offline/blocked-storage states handled (private mode, quota exceeded).
+**F - Fonts & assets.** Self-host Plex + Noto Sans Bengali (`@fontsource`), subset, `font-display: swap`, preload the primary; no Google Fonts; no third-party scripts, images or iframes.
+**G - GitHub repo.** README rewritten from the verified facts (live-demo badge, CI badge, GIF, honest feature list, architecture diagram, run instructions with port 8080), `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md` (Keep-a-Changelog), issue templates, topics, social preview image, licence (MIT) consistent everywhere. Use the repo-launch playbook; privacy-scrub screenshots.
+**H - Headers.** Vercel `headers`: strict CSP (`default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`), `Referrer-Policy: no-referrer`, `X-Content-Type-Options`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`. (Tailwind/Radix inline styles may need nonces/hashes - validate.)
+**I - i18n.** EN + বাংলা, locale-aware dates/numbers; keys extracted; no string concatenation.
+**J - JSON-LD & structured data.** `SoftwareApplication` for the product on the landing page; optional `Organization` for the agency (only with accurate data).
+**K - Keyboard & shortcuts.** Documented in-app (`?`), consistent, discoverable.
+**L - Lighthouse CI.** Budget enforced in CI (Perf ≥ 90 hard fail, ≥ 95 target); bundle-size budget; route-level code splitting; WASM loaded after the landing renders.
+**M - Mobile.** Designed for 360 px first; bottom tab bar; sheets; safe-area insets; 44 px targets; tested on a low-end Android profile.
+**N - Network hygiene.** Remove the jsDelivr launcher (or vendor + pin with SRI if the agency widget is wanted *on the agency site only*); remove GitHub avatar fetch; Prove-it panel reports zero.
+**O - Offline.** Service worker precaches the shell + WASM; airplane-mode test in E2E; install prompt; `navigator.storage.persist()` requested after first entry with an explanation.
+**P - Performance.** Initial JS ≤ 170 kB gz; lazy routes; lazy charts; virtualised tables; WASM streaming; no layout shift (reserve chart heights).
+**Q - Quality gates.** CI (typecheck, lint, unit, E2E, axe, Lighthouse, build) green on every push; coverage on money/date/crypto/stat code ≥ 90 %.
+**R - Recovery & backup.** Recovery key at creation; encrypted backup export/restore; backup reminder after N entries; restore tested in E2E.
+**S - SEO & social.** Public `/` indexable; unique `<title>`/description; canonical; **`og:image` / `twitter:image` 1200×630**; sitemap lists public pages only; `robots.txt` disallows `/app`; prerender or static HTML for `/`, `/security`, `/case-study` (e.g. SSG plugin) so previews/crawlers see content, not an empty shell.
+**T - Tests.** Vitest (stats, money, dates, crypto envelope, migrations, import validator) + Playwright (create → add → lock → unlock → edit → import/export → offline → erase) + axe in E2E.
+**U - UX copy.** Voice guide applied (see §3.4); microcopy reviewed in Bangla by a native speaker.
+**V - Video & visuals.** 30–45 s screen-recorded walkthrough (create vault → entry → lock → airplane mode → "nothing sent") with captions; 4 clean screenshots at 2×; animated GIF for the README; consider producing it with the HyperFrames tooling.
+**W - Website integration (agency).** Portfolio card: title, one-sentence outcome, 3 proof points, live link, video, "Read the case study". **Link out** to the demo rather than embedding it in an `<iframe>` (third-party iframes get partitioned/blocked IndexedDB and break the vault).
+**X - eXpectation-setting.** Privacy page states exactly what is and isn't collected; if the hosting domain runs analytics (configured outside this repo), say so plainly and keep the app origin free of it so the "app sends nothing" claim stays literally true.
+**Y - Year-proofing.** Dependency update cadence (Renovate/Dependabot config), Node/pnpm pinned via `packageManager`/`engines`, browserslist refresh, licence audit of fonts/deps, `SECURITY.md` contact.
+**Z - Zero-surprise launch.** Pre-launch checklist: fresh-profile run, Safari + Firefox + Chrome + Android Chrome, private-mode behaviour, storage-eviction message, 404/redirect map for old URLs, final claims review, tag `v1.0.0`.
 
 ## 8. Packaging the case study (what makes clients trust "we can build this")
 
-1. **Context & goal** — one paragraph; who it's for; why local-first.
-2. **Constraints** — no server, privacy, low-end phones, Bangla, offline.
-3. **Decisions & trade-offs** — SQLite-WASM vs IndexedDB-only; whole-blob encryption; PBKDF2 vs Argon2id; why no sync server; why integer money.
-4. **Architecture diagram** — simplified from ARCHITECTURE §3.
-5. **Security model with limits** — what's protected, what isn't (XSS/extension in an unlocked session, weak passwords, device compromise).
-6. **Quality evidence** — CI badges, test counts, Lighthouse/bundle numbers (generated), accessibility statement.
-7. **Process** — discovery → design system → build in slices → hand-over docs (this `docs/ai/` set is itself a deliverable clients value).
-8. **Outcome & CTA** — "Have a product that needs this level of care? Start a project" → agency contact (external link).
+1. **Context & goal** - one paragraph; who it's for; why local-first.
+2. **Constraints** - no server, privacy, low-end phones, Bangla, offline.
+3. **Decisions & trade-offs** - SQLite-WASM vs IndexedDB-only; whole-blob encryption; PBKDF2 vs Argon2id; why no sync server; why integer money.
+4. **Architecture diagram** - simplified from ARCHITECTURE §3.
+5. **Security model with limits** - what's protected, what isn't (XSS/extension in an unlocked session, weak passwords, device compromise).
+6. **Quality evidence** - CI badges, test counts, Lighthouse/bundle numbers (generated), accessibility statement.
+7. **Process** - discovery → design system → build in slices → hand-over docs (this `docs/ai/` set is itself a deliverable clients value).
+8. **Outcome & CTA** - "Have a product that needs this level of care? Start a project" → agency contact (external link).
 
 ## 9. How to execute (with AI assistance)
 

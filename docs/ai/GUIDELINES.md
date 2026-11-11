@@ -1,13 +1,13 @@
-# Guidelines — how to work in this repo (humans and AI agents)
+# Guidelines - how to work in this repo (humans and AI agents)
 
 > Updated 2026-11-11 after the vault/redesign implementation. These rules describe the code as it is now. The original audit-era rules (plaintext database, `AuthContext`, `getDb()`, `useTransactions`) no longer apply; if you meet them in an old note, the note is stale.
 
 ## 1. Read order
 
-1. [ARCHITECTURE.md](./ARCHITECTURE.md) — how it works (trust it over README and page copy).
-2. [CURRENT-STATE.md](./CURRENT-STATE.md) — §0 is the current baseline, risks and what was resolved.
-3. [ROADMAP.md](./ROADMAP.md) — §S says what is done, partial or open, and the next slice.
-4. [REDESIGN-AND-SHOWCASE.md](./REDESIGN-AND-SHOWCASE.md) — design direction, page plans, showcase checklist (read before any UI or copy work).
+1. [ARCHITECTURE.md](./ARCHITECTURE.md) - how it works (trust it over README and page copy).
+2. [CURRENT-STATE.md](./CURRENT-STATE.md) - §0 is the current baseline, risks and what was resolved.
+3. [ROADMAP.md](./ROADMAP.md) - §S says what is done, partial or open, and the next slice.
+4. [REDESIGN-AND-SHOWCASE.md](./REDESIGN-AND-SHOWCASE.md) - design direction, page plans, showcase checklist (read before any UI or copy work).
 
 ## 2. Non-negotiable rules
 

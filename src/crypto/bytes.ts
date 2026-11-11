@@ -69,7 +69,7 @@ export function fromBase64(text: string): Bytes {
   return out;
 }
 
-/** Uppercase hex, space separated — used by the "what is stored on this device" viewer. */
+/** Uppercase hex, space separated - used by the "what is stored on this device" viewer. */
 export function toHex(bytes: Uint8Array, max = bytes.length): string {
   const slice = bytes.subarray(0, max);
   return Array.from(slice, (b) => b.toString(16).padStart(2, "0").toUpperCase()).join(" ");

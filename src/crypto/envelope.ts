@@ -320,7 +320,7 @@ const backupSchema = z.object({
   data: z.object({ iv: z.string().min(1), ct: z.string().min(1) }),
   rev: z.number().int().min(0),
   updatedAt: z.string(),
-  /** Display name only — not secret, not authenticated. */
+  /** Display name only - not secret, not authenticated. */
   name: z.string().max(80).optional(),
 });
 

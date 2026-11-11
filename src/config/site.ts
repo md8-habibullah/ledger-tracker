@@ -3,7 +3,7 @@
  *
  * `agency` is intentionally null until the owner decides how to credit the studio on the
  * public pages (docs/ai/ROADMAP.md decision D7). When set, the case study shows a
- * "Start a project" link and the footer shows the credit. Plain external link only — no tracker.
+ * "Start a project" link and the footer shows the credit. Plain external link only - no tracker.
  */
 export interface SiteConfig {
   name: string;

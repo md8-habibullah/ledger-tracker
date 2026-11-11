@@ -15,7 +15,7 @@ interface MoneyProps {
   className?: string;
 }
 
-/** Figures are the hero: mono, tabular, never wrapped. Colour is never the only signal — outflows carry “−”. */
+/** Figures are the hero: mono, tabular, never wrapped. Colour is never the only signal - outflows carry “−”. */
 export function Money({ minor, kind, compactWhole, animate = false, className }: MoneyProps) {
   const format = useMoney();
   const counted = useCountUp(minor);
