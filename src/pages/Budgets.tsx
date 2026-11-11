@@ -1,328 +1,188 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
-import { type Budget } from '@/db';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { useTransactions } from '@/hooks/useTransactions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { useMemo, useState, type FormEvent } from "react";
+import { Pencil, Plus, Target, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategoryMark, EmptyState, PageHeader } from "@/components/ledger/bits";
+import { ProgressRule } from "@/components/ledger/charts";
+import { Money } from "@/components/ledger/Money";
+import { type Budget, type Period, deleteBudget, upsertBudget } from "@/db/repo";
+import { parseDate, shortMonth } from "@/lib/dates";
+import { currencyInfo, minorToInputString, parseMinor } from "@/lib/money";
+import { type BudgetProgress, budgetProgress } from "@/lib/stats";
+import { useLedger, useMutate } from "@/vault/useLedger";
 
-const Budgets = () => {
-  const { categories, stats, budgets, addBudget, updateBudget, deleteBudget } = useTransactions();
-  
-  const [open, setOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
-  const [category, setCategory] = useState('');
-  const [amount, setAmount] = useState('');
-  const [period, setPeriod] = useState<'monthly' | 'weekly' | 'yearly'>('monthly');
+const PERIOD_LABEL: Record<Period, string> = { weekly: "Weekly", monthly: "Monthly", yearly: "Yearly" };
 
-  const expenseCategories = categories.filter((c) => c.type === 'expense' || c.type === 'both');
+function rangeLabel(p: BudgetProgress): string {
+  const a = parseDate(p.range.from);
+  const b = parseDate(p.range.to);
+  const fmt = (d: Date) => `${d.getDate()} ${shortMonth(d)}`;
+  return p.budget.period === "yearly" ? String(a.getFullYear()) : `${fmt(a)} – ${fmt(b)}`;
+}
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+/** Straight-line projection of spend to the end of the period; only shown when it adds information. */
+function projection(p: BudgetProgress, today: string): string | null {
+  if (p.spentMinor === 0 || p.status === "over") return null;
+  const start = parseDate(p.range.from).getTime();
+  const end = parseDate(p.range.to).getTime() + 86_400_000;
+  const now = parseDate(today).getTime() + 86_400_000;
+  const elapsed = (now - start) / (end - start);
+  if (elapsed <= 0.15 || elapsed >= 1) return null; // too early to extrapolate / period over
+  const pct = Math.round(p.pct / elapsed);
+  return pct > 100 ? `At this pace you'll reach about ${pct}% by the end of the period.` : null;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
+interface FormState { categoryId: number | null; amount: string; period: Period; editing: Budget | null }
+
+export default function Budgets() {
+  const ledger = useLedger();
+  const mutate = useMutate();
+  const [form, setForm] = useState<FormState | null>(null);
+  const [errors, setErrors] = useState<{ category?: string; amount?: string }>({});
+  const [removing, setRemoving] = useState<Budget | null>(null);
+
+  const rows = useMemo(
+    () => (ledger ? ledger.budgets.map((b) => budgetProgress(b, ledger.transactions, ledger.today)).sort((a, b) => b.pct - a.pct) : []),
+    [ledger],
+  );
+  if (!ledger) return null;
+  const info = currencyInfo(ledger.currency);
+  const expenseCategories = ledger.categories.filter((c) => c.kind === "expense");
+
+  const openNew = () => { setErrors({}); setForm({ categoryId: null, amount: "", period: "monthly", editing: null }); };
+  const openEdit = (b: Budget) => { setErrors({}); setForm({ categoryId: b.categoryId, amount: minorToInputString(b.amountMinor, ledger.currency), period: b.period, editing: b }); };
+
+  const save = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!category || !amount) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
-    const budgetData = {
-      category,
-      amount: parseFloat(amount),
-      period,
-    };
-
-    try {
-      if (editingBudget) {
-        await updateBudget(editingBudget.id!, budgetData);
-        toast.success('Budget updated');
-      } else {
-        await addBudget(budgetData);
-        toast.success('Budget created');
-      }
-      resetForm();
-    } catch (error) {
-      toast.error('Failed to save budget');
-    }
+    if (!form) return;
+    const amountMinor = parseMinor(form.amount, ledger.currency);
+    const next: typeof errors = {};
+    if (form.categoryId === null) next.category = "Choose a category.";
+    if (amountMinor === null) next.amount = "Enter a limit above zero.";
+    setErrors(next);
+    if (next.category || next.amount || amountMinor === null || form.categoryId === null) return;
+    const categoryId = form.categoryId;
+    const saved = await mutate((db) => upsertBudget(db, { categoryId, amountMinor, period: form.period }), {
+      success: form.editing ? "Budget updated" : "Budget saved",
+    });
+    if (saved) setForm(null);
   };
 
-  const resetForm = () => {
-    setOpen(false);
-    setEditingBudget(null);
-    setCategory('');
-    setAmount('');
-    setPeriod('monthly');
-  };
-
-  const handleEdit = (budget: Budget) => {
-    setEditingBudget(budget);
-    setCategory(budget.category);
-    setAmount(budget.amount.toString());
-    setPeriod(budget.period);
-    setOpen(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteBudget(id);
-      toast.success('Budget deleted');
-    } catch (error) {
-      toast.error('Failed to delete budget');
-    }
-  };
-
-  const getBudgetProgress = (budget: Budget) => {
-    const spent = stats.categoryBreakdown[budget.category] || 0;
-    const percentage = (spent / budget.amount) * 100;
-    return { spent, percentage: Math.min(percentage, 100) };
+  const confirmRemove = async () => {
+    if (!removing) return;
+    const done = await mutate((db) => deleteBudget(db, removing.id));
+    setRemoving(null);
+    if (done !== undefined) toast.success("Budget deleted");
   };
 
   return (
-    <MainLayout>
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Budgets<span className="text-gradient">.</span>
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Set spending limits and track your progress
-          </p>
-        </div>
-        <Dialog open={open} onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary text-primary-foreground hover:opacity-90 glow-primary">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Budget
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="glass-strong border-border/50 sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">
-                {editingBudget ? 'Edit Budget' : 'New Budget'}
-              </DialogTitle>
-            </DialogHeader>
+    <>
+      <PageHeader
+        title="Budgets"
+        description="Limits per category. Each budget counts only spending inside its own current period."
+        actions={<Button className="gap-2" onClick={openNew}><Plus className="h-4 w-4" aria-hidden />New budget</Button>}
+      />
 
-            <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-              {/* Category */}
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="h-12 bg-muted/50 border-border/50">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-strong border-border/50">
-                    {expenseCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="h-3 w-3 rounded-full" 
-                            style={{ backgroundColor: cat.color }}
-                          />
-                          {cat.name}
-                        </div>
-                      </SelectItem>
+      {rows.length === 0 ? (
+        <EmptyState icon={Target} title="No budgets yet" action={<Button onClick={openNew}>Set your first budget</Button>}>
+          Pick a spending category and a limit for the week, month or year. You will see how much is left and when you are close to the limit.
+        </EmptyState>
+      ) : (
+        <ul className="grid gap-5 lg:grid-cols-2">
+          {rows.map((p) => {
+            const category = ledger.categoryById.get(p.budget.categoryId);
+            const note = projection(p, ledger.today);
+            return (
+              <li key={p.budget.id} className="glass flex flex-col gap-5 p-5 md:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2.5 text-lg font-medium">
+                      <CategoryMark category={category} size={26} />
+                      <span className="truncate">{category?.name ?? "Unknown category"}</span>
+                    </p>
+                    <p className="mt-1 text-muted-foreground">{PERIOD_LABEL[p.budget.period]} · {rangeLabel(p)}</p>
+                  </div>
+                  <div className="-mr-2 -mt-1 flex shrink-0 gap-0.5">
+                    <Button variant="ghost" size="icon" aria-label={`Edit ${category?.name ?? ""} budget`} onClick={() => openEdit(p.budget)}><Pencil className="h-4 w-4" aria-hidden /></Button>
+                    <Button variant="ghost" size="icon" aria-label={`Delete ${category?.name ?? ""} budget`} onClick={() => setRemoving(p.budget)}><Trash2 className="h-4 w-4" aria-hidden /></Button>
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <span className="text-xl"><Money minor={p.spentMinor} /> <span className="text-sm text-muted-foreground">of</span> <Money minor={p.budget.amountMinor} className="text-muted-foreground" /></span>
+                    <span className="text-sm text-muted-foreground">
+                      {p.remainingMinor >= 0 ? <><Money minor={p.remainingMinor} className="text-foreground" /> left</> : <><Money minor={-p.remainingMinor} className="outflow" /> over</>}
+                    </span>
+                  </p>
+                  <ProgressRule pct={p.pct} status={p.status} label={`${category?.name ?? "Budget"} ${p.budget.period} budget`} />
+                  {note ? <p className="mt-1.5 text-xs text-muted-foreground">{note}</p> : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <Dialog open={!!form} onOpenChange={(open) => !open && setForm(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{form?.editing ? "Edit budget" : "New budget"}</DialogTitle>
+            <DialogDescription>One budget per category and period. Saving again replaces the limit.</DialogDescription>
+          </DialogHeader>
+          {form ? (
+            <form onSubmit={save} className="grid gap-4" noValidate>
+              <div className="grid gap-1.5">
+                <Label htmlFor="budget-category">Category</Label>
+                <Select value={form.categoryId === null ? "" : String(form.categoryId)} disabled={!!form.editing} onValueChange={(v) => setForm({ ...form, categoryId: Number(v) })}>
+                  <SelectTrigger id="budget-category" aria-invalid={!!errors.category}><SelectValue placeholder="Choose a spending category" /></SelectTrigger>
+                  <SelectContent>
+                    {expenseCategories.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}><span className="flex items-center gap-2"><CategoryMark category={c} size={18} />{c.name}</span></SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.category ? <p className="text-sm text-destructive">{errors.category}</p> : null}
               </div>
-
-              {/* Amount */}
-              <div className="space-y-2">
-                <Label htmlFor="amount">Budget Amount</Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="1"
-                    min="0"
-                    placeholder="0"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pl-8 h-12 text-lg font-mono bg-muted/50 border-border/50"
-                  />
-                </div>
-              </div>
-
-              {/* Period */}
-              <div className="space-y-2">
-                <Label htmlFor="period">Period</Label>
-                <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-                  <SelectTrigger className="h-12 bg-muted/50 border-border/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="glass-strong border-border/50">
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="yearly">Yearly</SelectItem>
+              <div className="grid gap-1.5">
+                <Label htmlFor="budget-period">Period</Label>
+                <Select value={form.period} disabled={!!form.editing} onValueChange={(v) => setForm({ ...form, period: v as Period })}>
+                  <SelectTrigger id="budget-period"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(PERIOD_LABEL) as Period[]).map((p) => <SelectItem key={p} value={p}>{PERIOD_LABEL[p]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Submit */}
-              <Button 
-                type="submit" 
-                className="w-full h-12 bg-gradient-primary text-primary-foreground hover:opacity-90"
-              >
-                {editingBudget ? 'Update Budget' : 'Create Budget'}
-              </Button>
+              <div className="grid gap-1.5">
+                <Label htmlFor="budget-amount">Limit ({info.symbol})</Label>
+                <Input id="budget-amount" inputMode="decimal" autoComplete="off" className="figure h-11 text-lg" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} aria-invalid={!!errors.amount} placeholder={info.digits ? "0.00" : "0"} />
+                {errors.amount ? <p className="text-sm text-destructive">{errors.amount}</p> : null}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setForm(null)}>Cancel</Button>
+                <Button type="submit">{form.editing ? "Save changes" : "Save budget"}</Button>
+              </DialogFooter>
             </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
-      {/* Budgets Grid */}
-      {budgets.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass rounded-2xl border border-border/50 p-12 text-center"
-        >
-          <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-            <Plus className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">No budgets yet</h3>
-          <p className="text-muted-foreground mb-4">
-            Create your first budget to start tracking your spending limits
-          </p>
-          <Button 
-            onClick={() => setOpen(true)}
-            className="bg-gradient-primary text-primary-foreground"
-          >
-            Create Budget
-          </Button>
-        </motion.div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {budgets.map((budget, index) => {
-            const { spent, percentage } = getBudgetProgress(budget);
-            const cat = categories.find((c) => c.name === budget.category);
-            const isOverBudget = percentage >= 100;
-            const isWarning = percentage >= 80 && percentage < 100;
-
-            return (
-              <motion.div
-                key={budget.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="glass rounded-2xl border border-border/50 p-6"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="h-10 w-10 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${cat?.color}20` }}
-                    >
-                      <div 
-                        className="h-4 w-4 rounded-full"
-                        style={{ backgroundColor: cat?.color }}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{budget.category}</h3>
-                      <p className="text-xs text-muted-foreground capitalize">{budget.period}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleEdit(budget)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(budget.id!)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-bold font-mono">
-                        {formatCurrency(spent)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        of {formatCurrency(budget.amount)}
-                      </p>
-                    </div>
-                    <p className={cn(
-                      "text-sm font-medium",
-                      isOverBudget && "text-destructive",
-                      isWarning && "text-amber-500",
-                      !isOverBudget && !isWarning && "text-secondary"
-                    )}>
-                      {percentage.toFixed(0)}%
-                    </p>
-                  </div>
-
-                  <Progress 
-                    value={percentage} 
-                    className={cn(
-                      "h-2",
-                      isOverBudget && "[&>div]:bg-destructive",
-                      isWarning && "[&>div]:bg-amber-500",
-                      !isOverBudget && !isWarning && "[&>div]:bg-secondary"
-                    )}
-                  />
-
-                  {isOverBudget && (
-                    <p className="text-xs text-destructive">
-                      Over budget by {formatCurrency(spent - budget.amount)}
-                    </p>
-                  )}
-                  {!isOverBudget && (
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(budget.amount - spent)} remaining
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
-    </MainLayout>
+      <AlertDialog open={!!removing} onOpenChange={(open) => !open && setRemoving(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this budget?</AlertDialogTitle>
+            <AlertDialogDescription>Your entries are not affected. You can set the budget again at any time.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep budget</AlertDialogCancel>
+            <AlertDialogAction className={buttonVariants({ variant: "destructive" })} onClick={() => void confirmRemove()}>Delete budget</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
-};
-
-export default Budgets;
+}

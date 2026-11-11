@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node"]
+  },
+  "include": ["src/crypto", "src/db", "src/lib", "src/vault", "src/config", "src/i18n", "src/vite-env.d.ts"]
+}

@@ -1,314 +1,239 @@
+import { Link } from "react-router-dom";
+import { Code2, Database, Download, LockKeyhole, Network, ServerOff, ShieldCheck } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import {
-  ArrowRight,
-  Lock,
-  Database,
-  ShieldCheck,
-  Code2,
-  HelpCircle,
-  ChevronDown,
-} from "lucide-react";
-import { useAuth } from "@/components/auth/AuthContext";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Glow } from "@/components/fx/Glow";
+import { ProveIt } from "@/components/landing/ProveIt";
+import { HeroCards } from "@/components/landing/HeroCards";
+import { Kbd } from "@/components/ledger/bits";
+import { DEFAULT_PBKDF2_ITERATIONS } from "@/crypto/envelope";
+import { formatMoney } from "@/lib/money";
 
-const Landing = () => {
-  const navigate = useNavigate();
-  const { initializeVault } = useAuth();
+const CHECKS = [
+  {
+    icon: Network,
+    title: "Your entries never travel",
+    steps: "Open your browser's developer tools and go to the Network tab. Add an entry. You will see no request that carries it.",
+  },
+  {
+    icon: Database,
+    title: "What is stored is unreadable",
+    steps: "In developer tools open Application, then IndexedDB, then ledger-tracker, then vaults. The vault is a block of encoded ciphertext. Your category names and notes do not appear in it.",
+  },
+  {
+    icon: LockKeyhole,
+    title: "Locked means gone from memory",
+    steps: "Press Lock now. The page reloads, which discards the decrypted data held by this tab. Nothing about your session is saved, so closing the tab also locks the vault.",
+  },
+];
 
-  const handleGetStarted = () => {
-    initializeVault();
-    navigate("/login");
-  };
+const LIMITS = [
+  "If you forget your password and lose your recovery key, nobody can recover your data. There is no server and no reset email.",
+  `Anyone who copies your stored data can try passwords offline. The password is stretched with ${DEFAULT_PBKDF2_ITERATIONS.toLocaleString("en-US")} rounds, which slows guessing but cannot save a weak password.`,
+  "Software on your device that can read the page while the vault is open, such as malware or a hostile browser extension, can read your data. Encryption protects data at rest, not an unlocked screen.",
+  "The code that does the encryption is delivered by the website you load it from. That is why the source is open and why you can build and host it yourself.",
+  "The vault's name, its size and when it was last saved are visible without the password.",
+  "There is no sync between devices, and a browser can clear site data. Download a backup file now and then.",
+  "It has not had an independent security audit.",
+];
 
+const FAQ = [
+  ["Where is my data?", "In this browser, in IndexedDB, as ciphertext. Nothing is uploaded. There is no account."],
+  ["What if I forget my password?", "Use your recovery key to set a new password. If you have neither, the data cannot be opened by anyone, including us. You can erase the vault and start again."],
+  ["Can I use it on my phone and my laptop?", "Yes, but they are separate. Each device has its own vault. Move data between them with an encrypted backup file."],
+  ["Does it work without internet?", "After the page has loaded, entering and viewing data does not need a connection. Opening the site fresh while offline does not work yet."],
+  ["What does it cost?", "Nothing. It is open source under the MIT licence."],
+  ["I used an earlier version. What happens to my data?", "The earlier version stored data without encryption. On first visit you are offered a one-time encryption of that data, checked against the original, and then you choose when to delete the old copy."],
+];
+
+const TRUST = [
+  { icon: ShieldCheck, text: "AES-256-GCM encryption" },
+  { icon: ServerOff, text: "No account, no server" },
+  { icon: Code2, text: "Open source, MIT" },
+];
+
+const SAMPLE_CATEGORIES = [
+  ["Food", "--foil-4"],
+  ["Transport", "--foil-2"],
+  ["Rent", "--foil-5"],
+  ["Salary", "--foil-1"],
+  ["Coffee", "--foil-3"],
+  ["Gifts", "--foil-6"],
+] as const;
+
+function SectionHead({ id, title, children }: { id: string; title: string; children?: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden font-mono">
-
-      <div className="relative z-10">
-        {/* Navigation Header */}
-        <header className="border-b border-slate-800/50 bg-slate-950">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center gap-3">
-              <Lock className="w-8 h-8 text-cyan-400" />
-              <h1 className="text-2xl font-bold text-cyan-400">Ledger Tracker</h1>
-              <span className="ml-auto text-xs text-slate-500 font-mono">100% Local & Secure</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Hero Section - 60/40 Split */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
-            {/* Left Side - 60% (2 out of 3 columns) */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-6xl sm:text-7xl font-bold tracking-tight text-slate-100 leading-tight">
-                  Your Finances.
-                  <br />
-                  <span className="text-cyan-400">Zero Servers.</span>
-                  <br />
-                  <span className="text-emerald-400">100% Local.</span>
-                </h2>
-              </div>
-
-              <div className="space-y-3 text-slate-300">
-                <p className="text-lg flex items-start gap-3">
-                  <Code2 className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
-                  <span>Powered by SQLite WASM</span>
-                </p>
-                <p className="text-lg flex items-start gap-3">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-1" />
-                  <span>Military-Grade Local Encryption</span>
-                </p>
-                <p className="text-lg flex items-start gap-3">
-                  <Lock className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
-                  <span>No Telemetry. No Tracking.</span>
-                </p>
-              </div>
-
-              <Button
-                onClick={handleGetStarted}
-                size="lg"
-                className="bg-cyan-600 hover:bg-cyan-700 text-slate-950 font-bold border border-cyan-500 mt-6"
-              >
-                Initialize Local Vault
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-
-            {/* Right Side - 40% (1 out of 3 columns) */}
-            <div className="lg:col-span-1 flex items-center justify-center">
-              {/* Security Graphic - Layered Icons with Glow */}
-              <div className="relative w-full aspect-square max-w-sm">
-                {/* Outer Ring */}
-                <div className="absolute inset-0 rounded-full border-2 border-cyan-500/30 animate-pulse"></div>
-
-                {/* Middle Ring */}
-                <div className="absolute inset-4 rounded-full border border-emerald-500/20"></div>
-
-                {/* Inner Ring */}
-                <div className="absolute inset-8 rounded-full border border-cyan-500/10"></div>
-
-                {/* Center Icon with Glow */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative">
-
-                    {/* Main Icon */}
-                    <div className="relative bg-slate-900 border-2 border-cyan-500 rounded-full p-8 shadow-2xl shadow-cyan-500/50">
-                      <ShieldCheck className="w-24 h-24 text-cyan-400" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Orbiting Elements */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4">
-                  <div className="bg-slate-900 border border-cyan-500/50 rounded-full p-4 shadow-lg shadow-cyan-500/30">
-                    <Database className="w-6 h-6 text-cyan-400" />
-                  </div>
-                </div>
-
-                <div className="absolute right-0 top-1/2 translate-x-4 -translate-y-1/2">
-                  <div className="bg-slate-900 border border-emerald-500/50 rounded-full p-4 shadow-lg shadow-emerald-500/30">
-                    <Lock className="w-6 h-6 text-emerald-400" />
-                  </div>
-                </div>
-
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4">
-                  <div className="bg-slate-900 border border-cyan-500/50 rounded-full p-4 shadow-lg shadow-cyan-500/30">
-                    <ShieldCheck className="w-6 h-6 text-cyan-400" />
-                  </div>
-                </div>
-
-                {/* Hex Code Animation */}
-                <div className="absolute top-1/4 left-1/4 text-xs text-cyan-500/40 font-mono animate-pulse">
-                  0xDEADBEEF
-                </div>
-                <div className="absolute bottom-1/4 right-1/4 text-xs text-emerald-500/40 font-mono animate-pulse" style={{ animationDelay: '1s' }}>
-                  0xCAFEBABE
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Technical Timeline - How It Works */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-y border-slate-800/50">
-          <h3 className="text-4xl font-bold text-center mb-16 text-slate-100">
-            How It Works
-          </h3>
-
-          <div className="space-y-8">
-            {/* Timeline Item 1 */}
-            <div className="flex gap-8 items-start">
-              <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-lg border-2 border-slate-800">
-                  1
-                </div>
-                <div className="w-1 h-16 bg-gradient-to-b from-cyan-500/50 to-transparent hidden sm:block"></div>
-              </div>
-              <div className="pt-2">
-                <h4 className="text-xl font-bold text-slate-100 mb-2">Data Input</h4>
-                <p className="text-slate-400 font-mono text-sm">
-                  User enters financial transactions, budgets, and categories directly into the application.
-                </p>
-              </div>
-            </div>
-
-            {/* Timeline Item 2 */}
-            <div className="flex gap-8 items-start">
-              <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-lg border-2 border-slate-800">
-                  2
-                </div>
-                <div className="w-1 h-16 bg-gradient-to-b from-emerald-500/50 to-transparent hidden sm:block"></div>
-              </div>
-              <div className="pt-2">
-                <h4 className="text-xl font-bold text-slate-100 mb-2">Encrypted in Memory</h4>
-                <p className="text-slate-400 font-mono text-sm">
-                  Data is encrypted using your master password. Encryption happens locally in the browser.
-                </p>
-              </div>
-            </div>
-
-            {/* Timeline Item 3 */}
-            <div className="flex gap-8 items-start">
-              <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-lg border-2 border-slate-800">
-                  3
-                </div>
-                <div className="w-1 h-16 bg-gradient-to-b from-cyan-500/50 to-transparent hidden sm:block"></div>
-              </div>
-              <div className="pt-2">
-                <h4 className="text-xl font-bold text-slate-100 mb-2">Stored in Local SQLite</h4>
-                <p className="text-slate-400 font-mono text-sm">
-                  Encrypted data persists in a local SQLite WASM database. Zero network transmission.
-                </p>
-              </div>
-            </div>
-
-            {/* Timeline Item 4 */}
-            <div className="flex gap-8 items-start">
-              <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-lg border-2 border-slate-800">
-                  4
-                </div>
-              </div>
-              <div className="pt-2">
-                <h4 className="text-xl font-bold text-slate-100 mb-2">Auto-Lock on Inactivity</h4>
-                <p className="text-slate-400 font-mono text-sm">
-                  Vault automatically locks after configurable inactivity period. Complete control in your hands.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <h3 className="text-4xl font-bold text-center mb-16 text-slate-100">
-            Frequently Asked Questions
-          </h3>
-
-          <Accordion type="single" collapsible className="space-y-3">
-            <AccordionItem value="faq-1" className="border border-slate-800/50 rounded-lg px-6">
-              <AccordionTrigger className="hover:text-cyan-400 transition text-left">
-                <span className="flex items-center gap-2">
-                  <Code2 className="w-5 h-5 text-cyan-400" />
-                  Is my data really private?
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Yes. Ledger Tracker runs entirely in your browser with zero network connectivity. Your data never touches a server or the cloud. All encryption happens locally.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-2" className="border border-slate-800/50 rounded-lg px-6">
-              <AccordionTrigger className="hover:text-emerald-400 transition text-left">
-                <span className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                  What if I forget my password?
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                There is no recovery mechanism. Your password is never stored or transmitted. If you forget it, your data cannot be accessed. Keep your password safe and secure.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-3" className="border border-slate-800/50 rounded-lg px-6">
-              <AccordionTrigger className="hover:text-cyan-400 transition text-left">
-                <span className="flex items-center gap-2">
-                  <Database className="w-5 h-5 text-cyan-400" />
-                  Can I sync across devices?
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Currently, Ledger Tracker stores data locally on each device. Cross-device syncing is a planned feature for future releases while maintaining end-to-end encryption.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-4" className="border border-slate-800/50 rounded-lg px-6">
-              <AccordionTrigger className="hover:text-emerald-400 transition text-left">
-                <span className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-emerald-400" />
-                  Is Ledger Tracker free?
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Yes. Ledger Tracker is completely free and open-source. No subscriptions, no premium tiers, no ads, no tracking. Your privacy is our commitment.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-5" className="border border-slate-800/50 rounded-lg px-6">
-              <AccordionTrigger className="hover:text-cyan-400 transition text-left">
-                <span className="flex items-center gap-2">
-                  <Lock className="w-5 h-5 text-cyan-400" />
-                  What encryption standard is used?
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-400 font-mono text-sm pt-4">
-                Ledger Tracker uses industry-standard encryption protocols to secure your data. All encryption operations occur locally within the browser before storage in SQLite.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center border-t border-slate-800/50">
-          <h3 className="text-4xl font-bold mb-6 text-slate-100">
-            Ready to Secure Your Finances?
-          </h3>
-          <p className="text-lg text-slate-400 mb-8 max-w-2xl mx-auto font-mono">
-            Take control of your financial data. Zero servers. Zero telemetry. Zero compromises.
-          </p>
-          <Button
-            onClick={handleGetStarted}
-            size="lg"
-            className="bg-cyan-600 hover:bg-cyan-700 text-slate-950 font-bold border border-cyan-500"
-          >
-            Initialize Local Vault
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        </section>
-
-        {/* Footer */}
-        <footer className="border-t border-slate-800/50 bg-slate-950 mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center text-slate-500 font-mono text-sm">
-              <p>Ledger Tracker • 100% Local • Military-Grade Encryption • Always Free</p>
-              <p className="mt-2 text-xs text-slate-600">
-                Built with privacy-first engineering principles
-              </p>
-            </div>
-          </div>
-        </footer>
-      </div>
+    <div className="max-w-2xl">
+      <h2 id={id} className="text-[clamp(2rem,4.6vw,3.25rem)] leading-[1.02] tracking-[-0.03em]">{title}</h2>
+      {children ? <p className="mt-4 text-base leading-7 text-muted-foreground">{children}</p> : null}
     </div>
   );
-};
+}
 
-export default Landing;
+function Tile({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
+  return (
+    <li className={`glass flex flex-col gap-4 p-6 ${className ?? ""}`}>
+      <div>
+        <h3 className="text-xl">{title}</h3>
+      </div>
+      {children}
+    </li>
+  );
+}
+
+export default function Landing() {
+  return (
+    <>
+      {/* ------------------------------------------------------------ hero */}
+      <section className="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-16 pt-12 md:px-8 md:pb-24 md:pt-16 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-6">
+        <div className="relative z-10 flex flex-col items-start gap-7">
+          <h1 className="animate-rise text-[clamp(2.7rem,6.9vw,5.4rem)] font-semibold leading-[0.95] tracking-[-0.04em]">
+            Your money ledger, locked on your own device.
+          </h1>
+          <p className="animate-rise max-w-xl text-lg leading-8 text-muted-foreground" style={{ animationDelay: "120ms" }}>
+            Track income, expenses and budgets in taka. Everything is encrypted with your password and kept in this browser. There is no account and no server holding your numbers.
+          </p>
+          <div className="animate-rise flex flex-wrap gap-3" style={{ animationDelay: "220ms" }}>
+            <Button asChild size="lg"><Link to="/demo">Open the demo vault</Link></Button>
+            <Button asChild size="lg" variant="outline"><Link to="/create">Create your vault</Link></Button>
+          </div>
+          <ul className="animate-rise flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground" style={{ animationDelay: "320ms" }}>
+            {TRUST.map(({ icon: Icon, text }) => (
+              <li key={text} className="inline-flex items-center gap-2"><Icon className="h-4 w-4 text-primary" aria-hidden />{text}</li>
+            ))}
+          </ul>
+          <p className="animate-rise text-sm text-muted-foreground" style={{ animationDelay: "380ms" }}>The demo uses sample data and saves nothing. Free and open source.</p>
+        </div>
+        <HeroCards className="animate-rise" />
+      </section>
+
+      {/* ------------------------------------------------------------ proof */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-8 md:py-16" aria-labelledby="proof-title">
+        <SectionHead id="proof-title" title="Watch it prove itself.">
+          The panel below runs in this tab, right now. It runs the app's real encryption on text you type.
+        </SectionHead>
+        <ProveIt className="mt-10" />
+      </section>
+
+      {/* ------------------------------------------------------------ check it yourself */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-8 md:py-16" aria-labelledby="verify-title">
+        <SectionHead id="verify-title" title="Check it yourself.">Each claim here can be tested in a minute with tools already in your browser.</SectionHead>
+        <ul className="mt-10 grid gap-5 md:grid-cols-3">
+          {CHECKS.map(({ icon: Icon, title, steps }) => (
+            <li key={title} className="glass flex flex-col gap-4 p-6">
+              <span className="grid h-12 w-12 place-items-center rounded-md bg-foreground/[0.06] text-primary shadow-[0_0_0_1px_hsl(var(--foil-2)/0.4)_inset]">
+                <Icon className="h-5 w-5" aria-hidden />
+              </span>
+              <h3 className="text-xl">{title}</h3>
+              <p className="leading-7 text-muted-foreground">{steps}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ------------------------------------------------------------ what it does */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-8 md:py-16" aria-labelledby="features-title">
+        <SectionHead id="features-title" title="Built for taka, built to stay out of the way." />
+        <ul className="mt-10 grid gap-5 md:grid-cols-6">
+          <Tile title="Record in one line" className="md:col-span-3">
+            <p className="text-muted-foreground">Type “tea 40” or “+85000 salary 1 nov”. It is understood on your device and saved when you press Enter.</p>
+            <div className="well mt-auto grid gap-3 p-4" aria-hidden>
+              <p className="flex items-center gap-2 font-mono text-sm"><span className="text-primary">›</span>+85000 salary 1 nov<span className="h-4 w-px animate-pulse bg-primary" /></p>
+              <p className="flex items-center justify-between gap-3 border-t border-foreground/10 pt-3 text-sm">
+                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-foil-1" />Salary <span className="text-muted-foreground">· 1 Nov</span></span>
+                <span className="figure">{formatMoney(8500000, { code: "BDT" })}</span>
+              </p>
+            </div>
+          </Tile>
+          <Tile title="Budgets that mean what they say" className="md:col-span-3">
+            <p className="text-muted-foreground">Weekly, monthly and yearly limits. Each one counts only spending inside its own current period.</p>
+            <div className="well mt-auto flex items-center gap-5 p-4" aria-hidden>
+              <svg viewBox="0 0 44 44" className="h-16 w-16 shrink-0 -rotate-90">
+                <defs>
+                  <linearGradient id="budget-demo" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" style={{ stopColor: "hsl(var(--foil-1))" }} />
+                    <stop offset="1" style={{ stopColor: "hsl(var(--foil-3))" }} />
+                  </linearGradient>
+                </defs>
+                <circle cx="22" cy="22" r="18" fill="none" strokeWidth="4" className="stroke-foreground/10" />
+                <circle cx="22" cy="22" r="18" fill="none" strokeWidth="4" strokeLinecap="round" stroke="url(#budget-demo)" pathLength={100} strokeDasharray="72 100" />
+              </svg>
+              <p className="text-sm"><span className="figure text-2xl">72%</span><br /><span className="text-muted-foreground">Groceries, monthly · within the limit</span></p>
+            </div>
+          </Tile>
+          <Tile title="Your categories" className="md:col-span-2">
+            <p className="text-muted-foreground">Rename, recolour, merge or archive them. Old entries follow the change.</p>
+            <div className="mt-auto flex flex-wrap gap-2" aria-hidden>
+              {SAMPLE_CATEGORIES.map(([name, token]) => (
+                <span key={name} className="well inline-flex items-center gap-2 px-3 py-1.5 text-sm">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: `hsl(var(${token}))` }} />{name}
+                </span>
+              ))}
+            </div>
+          </Tile>
+          <Tile title="Taka first" className="md:col-span-2">
+            <p className="text-muted-foreground">Lakh and crore grouping, true minus signs, and amounts kept as whole paisa so totals are exact.</p>
+            <p className="figure glow-text mt-auto text-[1.7rem] leading-none" aria-hidden>{formatMoney(124500000, { code: "BDT" })}</p>
+          </Tile>
+          <Tile title="Backups you control" className="md:col-span-2">
+            <p className="text-muted-foreground">Download an encrypted file and restore it anywhere. Export a spreadsheet when you need one.</p>
+            <span className="well mt-auto inline-flex w-fit items-center gap-2 px-3 py-2 text-sm" aria-hidden><Download className="h-4 w-4 text-primary" />ledger-tracker-vault.json</span>
+          </Tile>
+          <Tile title="Dark and light" className="md:col-span-6">
+            <div className="grid items-center gap-5 md:grid-cols-[minmax(0,1fr)_auto]">
+              <p className="max-w-2xl text-muted-foreground">Vault (dark) and Pearl (light) themes, a compact row density, and the <Kbd>N</Kbd> key for a new entry from anywhere.</p>
+              <div className="flex gap-3" aria-hidden>
+                <span className="grid h-14 w-24 place-items-center rounded-md text-xs font-medium text-[#F4EFE6] shadow-[0_0_0_1px_hsl(0_0%_100%/0.14)_inset]" style={{ background: "linear-gradient(135deg,#14120F,#2A2520)" }}>Vault</span>
+                <span className="grid h-14 w-24 place-items-center rounded-md text-xs font-medium text-[#0E1A14] shadow-[0_0_0_1px_hsl(150_20%_20%/0.18)_inset]" style={{ background: "linear-gradient(135deg,#FFFFFF,#EEF2E4)" }}>Pearl</span>
+              </div>
+            </div>
+          </Tile>
+        </ul>
+      </section>
+
+      {/* ------------------------------------------------------------ limits */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-8 md:py-16" aria-labelledby="limits-title">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+          <SectionHead id="limits-title" title="What it does not protect against.">
+            Trust is easier when the limits are written down. The longer version is on the <Link className="text-primary underline underline-offset-2" to="/security">security page</Link>.
+          </SectionHead>
+          <ul className="grid gap-3">
+            {LIMITS.map((l) => (
+              <li key={l} className="well border-l-2 border-foil-4 px-5 py-4 leading-7" style={{ borderRadius: "var(--radius)" }}>{l}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------ faq */}
+      <section className="mx-auto w-full max-w-4xl px-4 py-12 md:px-8 md:py-16" aria-labelledby="faq-title">
+        <SectionHead id="faq-title" title="Questions." />
+        <div className="glass mt-8 px-6 md:px-8">
+          <Accordion type="single" collapsible>
+            {FAQ.map(([q, a], i) => (
+              <AccordionItem key={q} value={`q${i}`} className="last:border-b-0">
+                <AccordionTrigger className="text-left text-base font-medium">{q}</AccordionTrigger>
+                <AccordionContent className="max-w-prose text-[0.9375rem] leading-7 text-muted-foreground">{a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------ closing call */}
+      <section className="mx-auto w-full max-w-6xl px-4 pb-8 pt-12 md:px-8" aria-labelledby="cta-title">
+        <div className="glass relative overflow-hidden p-8 md:p-14">
+          <Glow className="-right-24 -top-28 h-[26rem] w-[26rem] opacity-70 md:-right-12" />
+          <div className="relative z-10 max-w-xl">
+            <h2 id="cta-title" className="text-[clamp(2rem,5vw,3.5rem)] leading-[1.02] tracking-[-0.03em]">See it with sample data.</h2>
+            <p className="mt-4 text-base leading-7 text-muted-foreground">The demo vault holds six months of sample entries in memory. Nothing is saved, and it disappears when you leave.</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Button asChild size="lg"><Link to="/demo">Open the demo vault</Link></Button>
+              <Button asChild size="lg" variant="outline"><Link to="/create">Create your vault</Link></Button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
