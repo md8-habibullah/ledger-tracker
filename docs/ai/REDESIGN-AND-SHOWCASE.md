@@ -50,10 +50,10 @@ From `public/s-*.png` (older UI, same visual language) and the code:
 
 A vault that protects money should look like **money that cannot be forged**. A banknote's defences are visual: a holographic foil edge that changes colour with the angle you look from, microprint, a seal. The design borrows those devices as *ornament with a job*: the foil edge says "authentic", the microprint strip repeats the privacy facts. Content floats on **glass panels over a slow aurora**, in a dark theme (Vault) and a light one (Pearl). The hero is a small stack of tilting glass cards (a ledger, a lock card, a money in/out chart) rather than an emblem.
 
-**Owner's standing visual rules (2026-11-11, do not reverse):**
-1. **No star, starburst or rosette ornaments, anywhere** (the guilloche rosette was removed for this reason). Do not reintroduce star-like decoration for "security"; use glass cards, soft colour pools (`Glow`), foil edges and the brand logo instead.
-2. **No "common AI colours": no purple, no navy/indigo, no cyan-on-dark.** The palette is a deliberate multi-colour mix: emerald, lime, lemon, tangerine, coral, raspberry on warm graphite (Vault) or green-tinted pearl (Pearl). The one exception is the owner's own logo, which is indigo and slate (kept as supplied; see 3.4).
-3. The owner approved the landing copy ("Watch it prove itself.", "Check it yourself.", "Built for taka, built to stay out of the way.", "Dark and light", "See it with sample data.") and the theme name **Pearl**.
+**Owner's standing visual rules (do not reverse):**
+1. **No star, starburst or rosette ornaments, anywhere** (2026-11-11; the guilloche rosette was removed for this reason). Do not reintroduce star-like decoration for "security"; use glass cards, soft colour pools (`Glow`), the edge and the brand logo instead.
+2. **Three colour families and no more (2026-11-12; this replaces the 2026-11-11 palette rule).** The owner looked at the emerald / lime / lemon / tangerine / coral / raspberry mix and rejected it: "thousands of colour mix up", not professional, and nothing matched their logo; they asked for 2 or 3 colours across the whole site, matched to the logo, in both themes. So the product uses: **indigo** (the logo's own `#5a5da9`), **slate** (the logo's `#6d7987`, plus the cool slate-tinted neutrals for surfaces and text) and **one red** (money out, "over budget", errors, destructive actions, and its lighter step for "close to the limit"). Nothing green, yellow, orange, cyan or purple anywhere, in code or in data defaults. `src/theme/palette.test.ts` fails the build on a colour outside those families. The earlier ban on indigo/navy no longer applies: the logo's indigo is now the brand colour of the whole system.
+3. The owner approved the landing copy ("Watch it prove itself.", "Check it yourself.", "Built for taka, built to stay out of the way.", "Dark and light", "See it with sample data.") and the theme name **Pearl** (2026-11-11).
 
 ### 3.2 Plan (compact token system)
 
@@ -61,30 +61,33 @@ A vault that protects money should look like **money that cannot be forged**. A 
 
 | Role | Pearl (light) | Vault (dark) | Use |
 |---|---|---|---|
-| Background | `90 12% 96.5%` (faint green-tinted pearl) | `30 10% 5%` (warm graphite) | page; aurora and film grain sit on top of it |
-| Foreground | `158 28% 8%` | `40 30% 96%` | text |
-| Primary | `150 92% 20%` (deep emerald) | `78 95% 58%` (lime) | links, active states, focus ring |
-| Primary button | near-black pill (`160 45% 9%` → `150 40% 17%`) with lime text | lime → lemon gradient (`84 95% 58%` → `50 100% 58%`) with graphite text | `.btn-primary` pill |
-| Outflow / destructive | `342 80% 40%` | `350 100% 78%` | negative amounts, destructive actions |
-| Foil spectrum | `--foil-1..7`: emerald, lime, lemon, tangerine, coral, raspberry, green (`158 85% 38%` … `120 62% 42%`) | lighter steps of the same hues | glass edge, seal ring, gauges, hero pool |
-| Aurora | emerald top-left (`foil-1`), coral bottom-right (`foil-5`), tangerine centre (`foil-4`) | same, stronger (`--aurora-o` 0.66 vs 0.45) | `.aurora` |
-| Chart in / out | `--chart-in` `107 65% 35%`, `--chart-out` `335 82% 41%` | `108 60% 38%`, `332 73% 59%` | chart marks only (green = money in, raspberry = money out) |
-| Category defaults | warm set, each at relative luminance ≈ 0.19 so it keeps 3:1 against the Pearl surface, the Vault surface and under a white glyph (`src/db/schema.ts` `DEFAULT_CATEGORIES`, `src/lib/icons.ts` `CATEGORY_COLORS`) | same | new vaults only; existing vaults keep the colours they already stored |
+| Background | `220 20% 96.5%` (`#f4f5f8`, cool pearl) | `212 17% 7.5%` (`#101316`, slate graphite) | page; aurora and film grain sit on top of it. `index.html` `theme-color` metas match |
+| Foreground | `224 32% 10%` | `220 24% 95%` | text |
+| Primary | `238 31% 51%` (the logo indigo) | `238 62% 79%` (a light tint of it) | links, active states, focus ring |
+| Primary button | solid indigo `238 31% 53%` → `238 31% 47%`, white text | `238 32% 55%` → `238 31% 50%`, white text | `.btn-primary` (same hue in both themes, so the button is the brand colour everywhere) |
+| Outflow / destructive | `350 68% 40%` | `350 100% 78%` | negative amounts, destructive actions, "over budget" |
+| Warn (lighter red step) | `350 70% 52%` | `350 72% 60%` | "close to the limit" bar fill and nav badge (`bg-warn`) |
+| Tonal ramp | `--foil-1..7`: indigo and slate steps (`238 31% 51%` … `212 14% 34%`) | lighter steps of the same two hues | glass edge, seal ring, gauges, glow pools. Kept the name `foil` so no component had to be renamed |
+| Aurora | indigo top-left (`foil-2`), slate bottom-right (`foil-4`), indigo centre (`foil-1`); `--aurora-o` 0.3 | same tokens, `--aurora-o` 0.42 | `.aurora` |
+| Chart in / out | `--chart-in` `238 31% 51%`, `--chart-out` `350 75% 60%` | `238 42% 62%`, `350 85% 76%` | chart marks only (indigo = money in, red = money out). Apart in lightness as well as hue (1.5:1 and 1.8:1) so greyscale and colour-blind readers can still tell them apart |
+| Budget status | ok = indigo gradient, near = `--warn`, over = `--destructive` | same | `ProgressRule`; the words ("Within the limit", "Close to the limit", "Over budget") and a warning icon carry the status too |
+| Category defaults | nine indigo and slate tones (`#5C5FAD` … `#818E9C`), each 3:1 or more with a white glyph and against both the Pearl page and the Vault card (`src/db/schema.ts` `DEFAULT_CATEGORIES`, `src/lib/icons.ts` `CATEGORY_COLORS`) | same | new vaults get these. Existing vaults keep the hex they stored, but it is **displayed** as the matching new tone (`src/lib/legacyCategoryColors.ts`, display only, nothing is rewritten). A colour the user typed themselves is shown as typed |
 
-Chart colours were chosen with the dataviz validator (`validate_palette.js`) against the real surfaces: the glass-over-page colour and the page, in both themes. Worst colour-blind separation (green vs raspberry, deutan) is ΔE 8.7 in Pearl and 10.7 in Vault; normal-vision separation about 35; all marks ≥ 3:1 on their surfaces.
-
-**Measured WCAG contrast** (script run on the real tokens, 2026-11-11). Surfaces tested: page; glass over page (top and bottom); glass over the centre of each of the three aurora blobs; a `.well` sub-panel over the same peaks; the in-card `Glow` pools (lemon, coral, lime); the hero card over each of its colour pools; card. Lowest value across those surfaces:
+**Measured WCAG contrast** (script run on the real tokens, 2026-11-12). Surfaces tested: page; card; glass over the centre of the aurora with all three blobs stacked (the worst case, top and bottom of the glass gradient); the in-card `Glow` pools at peak strength. Lowest value across those surfaces:
 
 | Pair | Pearl | Vault |
 |---|---|---|
-| Foreground text | 12.10 | 9.08 |
-| Muted (secondary) text | 4.66 | 4.50 |
-| Primary (links) | 5.10 | 7.86 |
-| Outflow red (not tested on `Glow` pools or the hero card, where it never appears) | 5.61 | 4.58 |
-| Button text on gradient ends | 13.64 / 9.81 | 15.13 / 14.30 |
-| Input border on glass (3:1 bar for UI) | 3.97 | 3.02 |
+| Foreground text | 12.28 | 9.82 |
+| Muted (secondary) text | 4.80 | 4.85 |
+| Primary (links) | 4.55 | 5.09 |
+| Outflow red | 5.47 | 5.11 |
+| Button text on gradient ends | 5.33 / 6.66 | 4.90 / 6.05 |
+| Button against the page (3:1 bar for UI) | 6.11 | 3.08 |
+| Input border on a card (3:1 bar for UI) | 4.21 | 3.39 |
+| Chart marks on a card, in / out (3:1 bar) | 5.80 / 3.76 | 4.34 / 7.66 |
+| Warn fill on a card (3:1) and badge text on it (4.5:1) | 4.68 / 4.68 | 4.60 / 4.95 |
 
-Every text pair clears AA (4.5:1) in both themes. The strengths of the aurora, the glass and the `Glow` pools are tokens (`--aurora-o`, `--glass-a1`, `--glow-a2/a3/a5`) tuned to these limits: raising any of them needs a re-run. The script is not committed; re-run an equivalent check (worst case = peak of each colour blob under the glass) when tokens change.
+Every text pair clears AA (4.5:1) in both themes. `src/theme/palette.test.ts` re-checks all of these from the real CSS on every `pnpm test` (page, card, button, charts, warn, input border, secondary text on each glow pool at its peak strength) and also fails on any colour outside the three families, in the tokens, in hex and `hsl()` literals in `src/`, and in Tailwind palette classes. The stacked-aurora worst case is **not** in the test (it needs the aurora geometry): after changing `--aurora-o`, `--glass-a1/a2`, `--glow-a*` or the `--foil-*` that the aurora uses, re-run an equivalent check by hand. In the browser, a computed-style audit of every element on every page in both themes found no colour outside the three families (a deliberately injected green, lime and yellow element was caught by it).
 
 **Type.** Unchanged: IBM Plex Sans Condensed 600 (titles, fluid `clamp()` sizes up to 5.4 rem in the hero), IBM Plex Sans (body, 15 px base), IBM Plex Mono 500 with tabular numbers for figures, Noto Sans Bengali fallback. All self-hosted. A distinctive variable display face would add impact but is a new dependency, so it needs the owner's approval.
 
@@ -94,9 +97,9 @@ Every text pair clears AA (4.5:1) in both themes. The strengths of the aurora, t
 
 | Device | What it is | Notes |
 |---|---|---|
-| `.glass` | translucent panel with backdrop blur and a 1 px conic **foil edge** | the edge's hue angle follows the pointer (`--ang`, `--mx`, `--my`, set by `GlowTracker` on the hovered panel only) |
+| `.glass` | translucent panel with backdrop blur and a 1 px conic edge in the indigo/slate ramp | the edge's hue angle follows the pointer (`--ang`, `--mx`, `--my`, set by `GlowTracker` on the hovered panel only) |
 | Aurora | three slow-drifting radial blobs behind everything (`Aurora`) | transform-only animation, no blur filter |
-| `Glow` | soft pool of foil colour (three stacked radial gradients, no filter) behind a card's content (`src/components/fx/Glow.tsx`) | replaces the removed rosette; strength is a per-theme token so secondary text on it keeps 4.5:1 |
+| `Glow` | soft pool of indigo and slate tint (three stacked radial gradients, no filter) behind a card's content (`src/components/fx/Glow.tsx`) | replaces the removed rosette; strength is a per-theme token so secondary text on it keeps 4.5:1 |
 | Hero cards | layered glass cards that tilt toward the pointer with a sweeping `.sheen` (`src/components/landing/HeroCards.tsx`) | pointer tilt is off for touch and reduced motion; on phones the lock card sits in flow above the ledger card |
 | Logo mark | the owner's ledger-book-with-rising-arrow logo, from their own vector files (`src/components/brand/LogoMark.tsx`, `docs/brand/`, §3.4) | brand spot everywhere, transparent (`Logo`), ink follows the theme |
 | Seal | foil-gradient ring and keyhole, optional glow and pulse rings | the **functional** lock/unlock indicator (status pill, unlock screen, "Seal a sample"); not the brand mark |
@@ -104,7 +107,7 @@ Every text pair clears AA (4.5:1) in both themes. The strengths of the aurora, t
 | Microprint | repeating privacy facts in the public footer | decorative; the same facts are real copy elsewhere |
 | Film grain | SVG noise as a `data:` URI on `body::before` | allowed by the CSP (`img-src data:`); inverted in Pearl |
 
-Buttons: `.btn-primary` (gradient pill with soft glow), `.btn-glass` (outline). `.well` is an inset sub-surface, `.text-foil` and `.glow-text` are decorative text treatments (never used for essential small text).
+Buttons: `.btn-primary` (solid brand-indigo pill, white text, soft lift), `.btn-glass` (outline). `.well` is an inset sub-surface, `.text-foil` and `.glow-text` are decorative text treatments (never used for essential small text).
 
 **Motion.** One staggered page-load rise on the hero, ambient aurora drift, the hero cards' float and sheen, count-up on balances, and responses to action. Everything is transform/opacity only. No effects on touch devices (pointer glow) or under `prefers-reduced-motion` (CSS rule plus JS checks in `GlowTracker` and `useCountUp`).
 
@@ -112,7 +115,7 @@ Buttons: `.btn-primary` (gradient pill with soft glow), `.btn-glass` (outline). 
 
 **Principles**
 1. Figures are the hero: large, mono, aligned, never rounded silently.
-2. Ornament carries meaning (foil = authentic); nothing is placed only to fill space, and never a star-like shape (owner's rule).
+2. Ornament carries meaning (the fine edge = authentic); nothing is placed only to fill space, and never a star-like shape (owner's rule).
 3. Verify, don't claim: any trust statement links to something the user can check. Effects must never imply a security property the code does not have.
 4. Keyboard and thumb first: `N` and quick entry everywhere, `g` + letter to jump between pages, bottom bar on phones, visible 2 px focus outline.
 5. Performance is part of the look: transform-only animation, one delegated pointer listener, no per-element blur filters.
@@ -122,11 +125,12 @@ Buttons: `.btn-primary` (gradient pill with soft glow), `.btn-glass` (outline). 
 | Draft | Decision |
 |---|---|
 | Ruled "Green-bar" pages with banding and no glows | **Replaced** (owner feedback: flat, not eye-catching) |
-| Neon mint for chart marks | **Rejected**: failed the dataviz lightness band and light-theme contrast (2.17:1); money in is blue, money out is coral |
-| Navy/cyan/violet palette, then cyan-on-dark | **Replaced** (owner: "common AI colour"); now the emerald / lime / lemon / tangerine / coral / raspberry mix on warm graphite and pearl |
+| Neon mint for chart marks | **Rejected**: failed the dataviz lightness band and light-theme contrast (2.17:1) |
+| Navy/cyan/violet palette, then cyan-on-dark | **Replaced** 2026-11-11 (owner: "common AI colour") by an emerald / lime / lemon / tangerine / coral / raspberry mix |
+| Emerald / lime / lemon / tangerine / coral / raspberry mix | **Replaced 2026-11-12** (owner: "thousands of colour mix up", unprofessional, not matching the logo; wants 2 or 3 colours). Now indigo + slate + one red. Money in is indigo and money out is red; the green/raspberry chart pair, the lime primary button, the tangerine "near" state and the multi-hue category defaults are all gone |
 | Guilloche starburst rosette and the orb built from it (`Guilloche`, `src/lib/guilloche.ts` and its tests, `VaultOrb`) | **Removed** (owner: no star-like ornaments); files deleted, replaced by `Glow` and `HeroCards` |
-| Blue money-in / coral money-out chart pair | **Replaced**: green in, raspberry out (blue is out of the palette); re-validated on the real glass |
-| Lime top-left aurora blob and a stronger dark aurora | **Reverted** to emerald and 0.66 after the contrast script showed red and secondary text under 4.5:1 on a lime peak |
+| One red for both "close to the limit" and "over budget" at the same strength | **Rejected**: two steps of the one red (`--warn` lighter, `--destructive` strongest) plus words and an icon, so "close" never looks as alarming as "over" |
+| Remapping stored category colours with a data migration | **Not done**: display-only remap instead (no schema or data change, so no owner approval needed); a migration can still be added if the owner wants stored values updated |
 | `backdrop-filter` blur on every nested element | **Limited** to panels and overlays; aurora uses plain gradients |
 | Text in foil gradients | **Limited** to large decorative headings; body and small text stay in plain text tokens |
 
@@ -136,7 +140,7 @@ Buttons: `.btn-primary` (gradient pill with soft glow), `.btn-glass` (outline). 
 
 * **One variable: the ink.** The page edges and base line are black `#000000` on light surfaces (the owner's `lt04`) and white `#ffffff` on dark ones (the owner's `lt02`): each theme is built from its own file and a test checks both. Indigo and slate never change. The wrong ink disappears (black on Vault 1.08:1, white on Pearl 1.07:1).
 * **In the app:** `Logo` is the owner's **transparent mark everywhere, with no tile or box** (headers, sidebar, hero card, splash, Settings). The ink follows the theme through `--logo-ink`: black on Pearl, white on Vault. `LogoMark` takes `tone` (`auto` default, `on-light`, `on-dark`) for a surface you control. Shapes live in the generated `src/components/brand/logoGeometry.ts`.
-* **Files:** `public/brand/mark-on-light.svg` and `mark-on-dark.svg` (transparent) with 512 px PNGs; `favicon.svg` and `/logo.svg` (transparent, ink follows the browser's or viewer's light/dark scheme); `favicon.ico` (fallback, dark ink); `apple-touch-icon.png` (white ink, since iOS puts black behind transparency). Index links carry `?v=3` so browsers refresh the old icon.
+* **Files:** `public/brand/mark-on-light.svg` and `mark-on-dark.svg` (transparent) with 512 px PNGs; `favicon.svg` and `/logo.svg` (transparent, ink follows the browser's or viewer's light/dark scheme; `favicon.svg` is the first-paint default); `favicon-light.svg` (lt04, black edges) and `favicon-dark.svg` (lt02, white edges), which the app swaps in to match its own theme button; `favicon.ico` (fallback, dark ink); `apple-touch-icon.png` (white ink, since iOS puts black behind transparency). Index links carry `?v=3` so browsers refresh the old icon.
 * **Visibility:** ink switches, never the ground. Measured contrast and the full rules are in `docs/brand/README.md`; `docs/brand/logo-sheet.html` shows every file on every surface.
 * **Not done: the wordmark.** The supplied files hold it as live text in Satoshi Black (no font, no outlines), and it is white in all four, so it is invisible on the two light variants. No lockup ships until the designer sends outlined text (and a dark wordmark for light surfaces). The header sets the name in the app's own type.
 * **Proposed, not yet confirmed by the owner:** the usage rules (clear space, no effects, no second colour) in `docs/brand/README.md`.
@@ -147,7 +151,7 @@ The desktop dock was five links and a Lock button with a large empty gap. It now
 
 | Part | What it shows | Notes |
 |---|---|---|
-| Nav badges | Entries: count dated this month. Budgets: number of budgets at 80% or more of their limit, as a tangerine (near) or red (over) pill | spoken in full ("Budgets 1 near or over the limit"); the phone bar gets a matching dot |
+| Nav badges | Entries: count dated this month. Budgets: number of budgets at 80% or more of their limit, as a light-red (near) or red (over) pill | spoken in full ("Budgets 1 near or over the limit"); the phone bar gets a matching dot |
 | `g` + letter | `g o` Overview, `g e` Entries, `g b` Budgets, `g c` Categories, `g s` Settings; hints appear on hover, focus, and on every link while `g` waits (1.5 s) | ignored while typing, with a modifier, or while a dialog is open; any other key cancels |
 | This month card | kept or overspent so far, a money in / out bar (2 px gap, words carry the meaning), in and out figures, day of the month | same stats as the Overview |
 | Budget watch | the three budgets closest to their limit: category mark, name, period (wk/mo/yr), percentage, thin gauge; over-limit rows add a warning icon and say so | "Set a limit" link when there are none |
@@ -165,7 +169,7 @@ Short screens (under 760 px tall) tighten the link height and gaps so the cards 
 * **One toast system:** sonner only (delete the Radix toaster).
 * **Delete unused primitives** (31) and re-add via the shadcn CLI only when needed.
 * **Money & number display rules:** always the vault currency; 2 fraction digits for currencies with minor units (never silently 0); true minus `−` (U+2212); outflows in Red ink, inflows in Ink; right-aligned tabular. A *Display* setting chooses **digits** (0–9 / ০–৯) × **grouping** (international 1,234,567 / lakh-crore 12,34,567); verify `Intl` output (`en-BD`, `bn-BD`, `en-IN`) in target browsers.
-* **Charts:** recharts stays; style via tokens; every chart has a table fallback for screen readers; money in is `--chart-in` (blue) and money out is `--chart-out` (coral), validated with the dataviz script; the legend and the table fallback carry identity, text never wears the series colour.
+* **Charts:** recharts stays; style via tokens; every chart has a table fallback for screen readers; money in is `--chart-in` (indigo) and money out is `--chart-out` (red), kept apart in lightness and contrast-tested by `palette.test.ts`; the legend and the table fallback carry identity, text never wears the series colour.
 * **Density:** Comfortable / Compact toggle (ledger users want compact).
 * **Accessibility floor (non-negotiable):** WCAG 2.1 AA contrast, full keyboard operation (rows focusable, sheet/dialog focus-trap - Radix gives this), visible focus, 44 px touch targets, `aria-label`s on icon buttons, reduced-motion, no colour-only meaning (outflow also has a `−` sign).
 * **Voice:** plain, active, sentence case; buttons say what happens; errors say what to do.
@@ -213,7 +217,7 @@ Legend - **Keep / Change / New**. IDs point to findings in CURRENT-STATE.
 
 * **Change:** replace 4 cards with one **StatementStrip** (Balance · This month in/out · Net · Savings rate, each with a 6-month sparkline); replace donut with **RankedBars** (top categories, inline amounts, vs last month); area chart → **CashFlowChart** (paired in/out bars per month with ruled grid) + tooltip table; heading becomes informational ("November so far · 11 days left").
 * **Change:** QuickEntry becomes a persistent one-line **QuickEntryBar** (type · amount · category · note · date, Enter to save, `N` to focus) with natural-language parsing (§6 F-9).
-* **New:** *Upcoming* (next recurring items), *Insights* (2–3 locally computed sentences: "Food is 18 % above October"), *Budget watch* (top 3 at risk), month selector (all totals respect it - BUG-10).
+* **New:** *Upcoming* (next recurring items), *Insights* (2–3 locally computed sentences: "Food is 18 % above October"), *Budget watch* (top 3 at risk), month selector (all totals respect it - BUG-10; **built 2026-11-12**: `PeriodPicker` with quick ranges and a month calendar, `?period=` in the URL, `src/lib/period.ts`).
 * **Accept:** one currency everywhere; first meaningful paint with 5,000 entries < 300 ms after unlock; empty state guides first entry.
 
 ### 5.5 Entries (`/app/entries`) - today `Ledger.tsx`

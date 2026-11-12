@@ -32,7 +32,7 @@
 | Typecheck | `pnpm typecheck` | `tsc --noEmit -p tsconfig.app.json`; baseline 0 errors |
 | Strict typecheck | `node_modules/.bin/tsc --noEmit -p tsconfig.strict.json` | strict mode over `crypto/ db/ lib/ vault/ config/`; keep it clean |
 | Lint | `pnpm lint` | baseline 0 errors, 0 warnings |
-| Tests | `pnpm test` (`pnpm test:watch`) | Vitest 3.2.7, Node environment, 119 tests |
+| Tests | `pnpm test` (`pnpm test:watch`) | Vitest 3.2.7, Node environment, 173 tests |
 | Everything | `pnpm check` | typecheck → lint → test → build |
 | Preview build | `pnpm preview` | plain `vite preview`; for header-accurate testing serve `dist/` with the headers from `vercel.json` |
 
@@ -66,7 +66,7 @@
 
 ## 6. UI rules
 
-1. Read REDESIGN §3 first. New UI uses the tokens and utilities (`.glass`, `.well`, `.btn-*`, `--foil-*`); do not add raw colours or fonts outside them. Glass over glass (dialogs, selects, tooltips) raises opacity with `[--glass-a1:0.94] [--glass-a2:0.92]`. Check any new text pair with a contrast script in both themes, including glass over the brightest aurora point.
+1. Read REDESIGN §3 first. New UI uses the tokens and utilities (`.glass`, `.well`, `.btn-*`, `--foil-*`); do not add raw colours or fonts outside them. **The only colours are indigo, slate and the one red** (owner's rule, 2026-11-12): no green, yellow, orange, cyan or purple anywhere, and no Tailwind palette classes such as `bg-emerald-500`; `src/theme/palette.test.ts` fails on them. Status colours: indigo (fine), `bg-warn` (close to a limit), `bg-destructive` / `outflow` (over, money out, errors). Glass over glass (dialogs, selects, tooltips) raises opacity with `[--glass-a1:0.94] [--glass-a2:0.92]`. Check any new text pair with a contrast script in both themes, including glass over the brightest aurora point.
 2. Accessibility floor: every control keyboard-operable, visible focus, accessible names on icon buttons, no colour-only meaning (outflows carry "−"), reduced motion respected, contrast ≥ AA in **both** themes.
 3. Empty, loading and error states are part of the component.
 4. Copy: plain, active, sentence case; buttons say what happens ("Save entry", "Delete budget"). Destructive actions either offer Undo or ask for confirmation, with the destructive button styled `buttonVariants({ variant: "destructive" })`.
@@ -76,6 +76,7 @@
 
 ## 7. Recipes
 
+* **Overview period:** add or change a range in `src/lib/period.ts` (`PERIOD_PRESETS`, `resolvePeriod`) and its tests first; the page and `PeriodPicker` only read the result. Keep "this month" equal to `computeStats` (a test enforces it).
 * **Use the logo:** `<Logo />` for brand spots (transparent mark, ink follows the theme; never put it on a tile), or `<LogoMark tone="on-light|on-dark|auto" />` on a surface you control. Never redraw or recolour it; rules in `docs/brand/README.md`. To rebuild the files from the owner's originals: `python3 -I docs/brand/build-logo-kit.py docs/brand/originals .`.
 * **Add an app page:** create `src/pages/Foo.tsx` (default export), `lazy()`-import it in `src/App.tsx` and add `<Route path="foo" element={<Foo />} />` inside the `/app` `RequireVault` route; add `{ to: "/app/foo", label, icon, end, go }` to `NAV` in `src/components/layout/sidebarModel.ts` (`go` is the letter after `g` that jumps there; keep it unique). The desktop sidebar, the icon rail and the phone bar all render from `NAV`.
 * **Add a public page:** same, but inside the `PublicLayout` route; add it to `public/sitemap.xml` if it should be indexed, and decide whether it needs `X-Robots-Tag: noindex` in `vercel.json`.

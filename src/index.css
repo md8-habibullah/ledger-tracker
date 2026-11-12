@@ -4,13 +4,15 @@
 
 /*
  * "Banknote" design system (docs/ai/REDESIGN-AND-SHOWCASE.md §3).
- * Idea: a private money vault drawn like a security feature on currency: glass surfaces and a holographic
- * foil edge that shifts hue as the pointer "tilts" it. The colour mix is deliberately NOT the usual
- * purple / navy / cyan: warm graphite or pearl surfaces with a citrus-to-coral foil (emerald, lime, lemon,
- * tangerine, coral, raspberry). HSL triplets keep Tailwind/shadcn working.
- *   Vault = dark (the showpiece), Pearl = light (theme id stays "paper" so saved preferences keep working).
- * Contrast is checked by script for every text pair (see GUIDELINES §6); foil colours are decoration and
- * large display text only, never body copy. No star/starburst ornaments (owner's rule).
+ * Idea: a private money vault drawn like a security feature on currency: glass surfaces with a fine edge that
+ * shifts as the pointer "tilts" it. THE COLOUR SYSTEM IS THREE FAMILIES, NO MORE (owner's rule, 2026-11-12):
+ *   1. Indigo  - the brand colour, the logo's own #5a5da9: buttons, links, active states, focus, money in.
+ *   2. Slate   - the logo's #6d7987 and the cool grey-blue neutrals every surface and text colour is tinted with.
+ *   3. Red     - one functional hue, only for money out, an over-budget state and errors / destructive actions.
+ * Nothing green, yellow, orange, cyan or purple. `src/theme/palette.test.ts` enforces the hue families and the contrast.
+ * HSL triplets keep Tailwind/shadcn working. Vault = dark (the showpiece), Pearl = light (theme id stays "paper").
+ * The --foil-* tokens are kept by name but are now a tonal ramp of indigo and slate (decoration and large display
+ * text only, never body copy). No star/starburst ornaments (owner's rule).
  */
 
 /* Lets the foil's hue angle be driven from script (pointer) per element. */
@@ -24,59 +26,63 @@
   :root {
     color-scheme: light;
 
-    --background: 90 12% 96.5%;
-    --foreground: 158 28% 8%;
-    --band: 90 10% 93%;
+    --background: 220 20% 96.5%;
+    --foreground: 224 32% 10%;
+    --band: 220 16% 93%;
 
     --card: 0 0% 100%;
-    --card-foreground: 158 28% 8%;
+    --card-foreground: 224 32% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 158 28% 8%;
+    --popover-foreground: 224 32% 10%;
 
-    --primary: 150 92% 20%;
+    /* Indigo = the brand (the logo's #5a5da9). As text on Pearl it holds 5.3:1 or more. */
+    --primary: 238 31% 51%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 90 10% 92%;
-    --secondary-foreground: 158 28% 8%;
-    --muted: 90 10% 92%;
-    --muted-foreground: 150 8% 34%;
-    --accent: 90 18% 90%;
-    --accent-foreground: 158 28% 8%;
+    --secondary: 220 16% 92%;
+    --secondary-foreground: 224 32% 10%;
+    --muted: 220 16% 92%;
+    --muted-foreground: 218 12% 36%;
+    --accent: 226 22% 91%;
+    --accent-foreground: 224 32% 10%;
 
-    --destructive: 342 80% 40%;
+    /* The one red: money out, errors, destructive actions, "over budget". --warn is its lighter step ("close to the limit"). */
+    --destructive: 350 68% 40%;
     --destructive-foreground: 0 0% 100%;
+    --warn: 350 70% 52%;
+    --warn-foreground: 0 0% 100%;
 
-    --border: 90 12% 85%;
-    --input: 100 6% 48%;
-    --ring: 150 92% 26%;
+    --border: 220 14% 86%;
+    --input: 218 10% 50%;
+    --ring: 238 31% 51%;
 
-    /* Holographic foil: seven stops, emerald through lime, lemon, tangerine, coral and raspberry. */
-    --foil-1: 158 85% 38%;
-    --foil-2: 84 85% 44%;
-    --foil-3: 46 100% 48%;
-    --foil-4: 26 100% 54%;
-    --foil-5: 8 92% 56%;
-    --foil-6: 340 86% 56%;
-    --foil-7: 120 62% 42%;
+    /* Tonal ramp, indigo and slate only: gradients, glass edge, glow pools, decoration. */
+    --foil-1: 238 31% 51%;
+    --foil-2: 238 40% 63%;
+    --foil-3: 226 26% 58%;
+    --foil-4: 212 11% 48%;
+    --foil-5: 238 34% 40%;
+    --foil-6: 212 14% 34%;
+    --foil-7: 238 24% 74%;
 
-    /* Primary button: a near-black pill with lime text (text on it must hold 4.5:1). */
-    --btn-from: 160 45% 9%;
-    --btn-to: 150 40% 17%;
-    --btn-fg: 80 95% 64%;
-    --btn-glow: 88 90% 50%;
+    /* Primary button: the brand indigo, white text (4.9:1 or more). */
+    --btn-from: 238 31% 53%;
+    --btn-to: 238 31% 47%;
+    --btn-fg: 0 0% 100%;
+    --btn-glow: 238 31% 51%;
 
-    --aurora-o: 0.45;
-    /* In-card colour pools (Glow.tsx): peak alpha per colour. Tuned so secondary text on a pool keeps 4.5:1. */
+    --aurora-o: 0.3;
+    /* In-card colour pools (Glow.tsx): peak alpha per tint. Tuned so secondary text on a pool keeps 4.5:1. */
     --glow-a2: 0.34;
-    --glow-a3: 0.55;
-    --glow-a5: 0.4;
+    --glow-a3: 0.34;
+    --glow-a5: 0.34;
     --noise-o: 0.05;
     --glass-top: 0 0% 100%;
     --glass-a1: 0.82;
-    --glass-bottom: 90 30% 99%;
+    --glass-bottom: 220 30% 99%;
     --glass-a2: 0.62;
     --edge-o: 0.5;
-    --glass-shadow: 0 1px 0 hsl(0 0% 100% / 0.9) inset, 0 24px 48px -28px hsl(150 40% 14% / 0.28), 0 2px 6px -2px hsl(150 30% 20% / 0.1);
-    --spot: 46 100% 50%;
+    --glass-shadow: 0 1px 0 hsl(0 0% 100% / 0.9) inset, 0 24px 48px -28px hsl(224 40% 16% / 0.26), 0 2px 6px -2px hsl(224 30% 20% / 0.1);
+    --spot: 238 55% 62%;
 
     --radius: 12px;
     --radius-sm: 8px;
@@ -84,22 +90,22 @@
     --radius-xl: 28px;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 158 28% 8%;
-    --sidebar-primary: 150 92% 20%;
+    --sidebar-foreground: 224 32% 10%;
+    --sidebar-primary: 238 31% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 90 18% 90%;
-    --sidebar-accent-foreground: 158 28% 8%;
-    --sidebar-border: 90 12% 85%;
-    --sidebar-ring: 150 92% 26%;
+    --sidebar-accent: 226 22% 91%;
+    --sidebar-accent-foreground: 224 32% 10%;
+    --sidebar-border: 220 14% 86%;
+    --sidebar-ring: 238 31% 51%;
 
-    /* Chart marks: validated with the dataviz script against the surfaces (lightness band, CVD separation, contrast). */
-    --chart-in: 107 65% 35%;
-    --chart-out: 335 82% 41%;
-    --chart-1: 107 65% 35%;
-    --chart-2: 46 100% 48%;
-    --chart-3: 335 82% 41%;
-    --chart-4: 150 8% 34%;
-    --chart-5: 26 100% 54%;
+    /* Chart marks: indigo in, red out, apart in lightness as well as hue (greyscale and colour-blind safe). */
+    --chart-in: 238 31% 51%;
+    --chart-out: 350 75% 60%;
+    --chart-1: 238 31% 51%;
+    --chart-2: 212 11% 48%;
+    --chart-3: 350 75% 60%;
+    --chart-4: 218 12% 36%;
+    --chart-5: 238 40% 63%;
 
     /* The owner's logo, exactly as supplied (docs/brand/README.md). Indigo and slate never change; only the ink
        flips with the theme: the transparent mark, dark ink on Pearl and white ink on Vault. */
@@ -119,73 +125,76 @@
     --logo-ink: #ffffff;
     color-scheme: dark;
 
-    --background: 30 10% 5%;
-    --foreground: 40 30% 96%;
-    --band: 30 9% 8%;
+    --background: 212 17% 7.5%;
+    --foreground: 220 24% 95%;
+    --band: 212 15% 9%;
 
-    --card: 30 9% 8.5%;
-    --card-foreground: 40 30% 96%;
-    --popover: 30 10% 9%;
-    --popover-foreground: 40 30% 96%;
+    --card: 212 15% 10.5%;
+    --card-foreground: 220 24% 95%;
+    --popover: 212 15% 11.5%;
+    --popover-foreground: 220 24% 95%;
 
-    --primary: 78 95% 58%;
-    --primary-foreground: 30 10% 5%;
-    --secondary: 30 8% 13%;
-    --secondary-foreground: 40 30% 96%;
-    --muted: 30 8% 12%;
-    --muted-foreground: 36 9% 68%;
-    --accent: 30 8% 15%;
-    --accent-foreground: 40 30% 96%;
+    /* As text on Vault the brand indigo is lifted to a tint (8:1); buttons keep the exact brand indigo. */
+    --primary: 238 62% 79%;
+    --primary-foreground: 212 17% 7.5%;
+    --secondary: 212 12% 14%;
+    --secondary-foreground: 220 24% 95%;
+    --muted: 212 12% 13%;
+    --muted-foreground: 214 11% 68%;
+    --accent: 214 12% 17%;
+    --accent-foreground: 220 24% 95%;
 
     --destructive: 350 100% 78%;
-    --destructive-foreground: 30 10% 5%;
+    --destructive-foreground: 212 17% 7.5%;
+    --warn: 350 72% 60%;
+    --warn-foreground: 212 17% 7.5%;
 
-    --border: 30 8% 18%;
-    --input: 30 8% 42%;
-    --ring: 78 95% 58%;
+    --border: 212 12% 19%;
+    --input: 212 10% 44%;
+    --ring: 238 62% 72%;
 
-    --foil-1: 158 85% 56%;
-    --foil-2: 80 95% 60%;
-    --foil-3: 48 100% 62%;
-    --foil-4: 26 100% 62%;
-    --foil-5: 8 100% 66%;
-    --foil-6: 340 95% 68%;
-    --foil-7: 124 70% 56%;
+    --foil-1: 238 42% 64%;
+    --foil-2: 238 55% 74%;
+    --foil-3: 226 35% 66%;
+    --foil-4: 212 16% 62%;
+    --foil-5: 238 40% 56%;
+    --foil-6: 212 14% 54%;
+    --foil-7: 238 30% 80%;
 
-    --btn-from: 84 95% 58%;
-    --btn-to: 50 100% 58%;
-    --btn-fg: 30 10% 5%;
-    --btn-glow: 66 100% 56%;
+    --btn-from: 238 32% 55%;
+    --btn-to: 238 31% 50%;
+    --btn-fg: 0 0% 100%;
+    --btn-glow: 238 45% 60%;
 
-    --aurora-o: 0.66;
-    --glow-a2: 0.2;
+    --aurora-o: 0.42;
+    --glow-a2: 0.22;
     --glow-a3: 0.24;
-    --glow-a5: 0.26;
+    --glow-a5: 0.18;
     --noise-o: 0.05;
-    --glass-top: 30 9% 17%;
+    --glass-top: 212 15% 16%;
     --glass-a1: 0.7;
-    --glass-bottom: 30 10% 7%;
+    --glass-bottom: 212 17% 7%;
     --glass-a2: 0.46;
     --edge-o: 0.3;
-    --glass-shadow: 0 1px 0 hsl(0 0% 100% / 0.07) inset, 0 28px 60px -28px hsl(30 40% 1% / 0.85);
-    --spot: 60 100% 60%;
+    --glass-shadow: 0 1px 0 hsl(0 0% 100% / 0.07) inset, 0 28px 60px -28px hsl(212 40% 2% / 0.85);
+    --spot: 238 70% 78%;
 
-    --sidebar-background: 30 9% 8.5%;
-    --sidebar-foreground: 40 30% 96%;
-    --sidebar-primary: 78 95% 58%;
-    --sidebar-primary-foreground: 30 10% 5%;
-    --sidebar-accent: 30 8% 15%;
-    --sidebar-accent-foreground: 40 30% 96%;
-    --sidebar-border: 30 8% 18%;
-    --sidebar-ring: 78 95% 58%;
+    --sidebar-background: 212 15% 10.5%;
+    --sidebar-foreground: 220 24% 95%;
+    --sidebar-primary: 238 62% 79%;
+    --sidebar-primary-foreground: 212 17% 7.5%;
+    --sidebar-accent: 214 12% 17%;
+    --sidebar-accent-foreground: 220 24% 95%;
+    --sidebar-border: 212 12% 19%;
+    --sidebar-ring: 238 62% 72%;
 
-    --chart-in: 108 60% 38%;
-    --chart-out: 332 73% 59%;
-    --chart-1: 108 51% 43%;
-    --chart-2: 48 100% 62%;
-    --chart-3: 335 82% 41%;
-    --chart-4: 36 9% 68%;
-    --chart-5: 26 100% 62%;
+    --chart-in: 238 42% 62%;
+    --chart-out: 350 85% 76%;
+    --chart-1: 238 42% 62%;
+    --chart-2: 212 16% 62%;
+    --chart-3: 350 85% 76%;
+    --chart-4: 214 11% 68%;
+    --chart-5: 238 55% 74%;
   }
 
   :root[data-density="compact"] {
@@ -262,7 +271,7 @@
     backdrop-filter: blur(20px) saturate(150%);
     box-shadow: var(--glass-shadow);
   }
-  /* Foil edge: a 1px ring painted with the conic foil. Its hue angle follows the pointer (set by script). */
+  /* Edge: a 1px ring painted with the indigo-and-slate ramp. Its angle follows the pointer (set by script). */
   .glass::before {
     content: "";
     position: absolute;
@@ -323,18 +332,18 @@
     text-shadow: none;
   }
 
-  /* Primary action: foil-lit pill. */
+  /* Primary action: the brand indigo with a soft lift. */
   .btn-primary {
     position: relative;
     color: hsl(var(--btn-fg));
     background: linear-gradient(135deg, hsl(var(--btn-from)), hsl(var(--btn-to)));
-    box-shadow: 0 0 0 1px hsl(var(--btn-glow) / 0.55) inset, 0 10px 30px -10px hsl(var(--btn-glow) / 0.65), 0 1px 0 hsl(0 0% 100% / 0.35) inset;
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.22) inset, 0 8px 22px -12px hsl(var(--btn-glow) / 0.7);
     transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-base) var(--ease), filter var(--dur-base) var(--ease);
   }
   .btn-primary:hover {
     transform: translateY(-1px);
-    filter: saturate(1.15) brightness(1.05);
-    box-shadow: 0 0 0 1px hsl(var(--btn-glow) / 0.8) inset, 0 16px 40px -10px hsl(var(--btn-glow) / 0.85), 0 1px 0 hsl(0 0% 100% / 0.45) inset;
+    filter: brightness(1.08);
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.3) inset, 0 12px 28px -12px hsl(var(--btn-glow) / 0.85);
   }
   .btn-primary:active { transform: translateY(0); }
 
@@ -372,7 +381,7 @@
     background: hsl(var(--foreground) / 0.035);
   }
 
-  /* Outflows read in coral and always carry a minus sign, so colour is never the only signal. */
+  /* Outflows read in the one red and always carry a minus sign, so colour is never the only signal. */
   .outflow {
     color: hsl(var(--destructive));
   }
@@ -408,7 +417,7 @@
   height: 70vmax;
   left: -22vmax;
   top: -34vmax;
-  background: radial-gradient(closest-side, hsl(var(--foil-1) / 0.7), transparent);
+  background: radial-gradient(closest-side, hsl(var(--foil-2) / 0.7), transparent);
   animation: drift-a 44s ease-in-out infinite alternate;
 }
 .aurora::after {
@@ -416,7 +425,7 @@
   height: 64vmax;
   right: -26vmax;
   bottom: -30vmax;
-  background: radial-gradient(closest-side, hsl(var(--foil-5) / 0.7), transparent);
+  background: radial-gradient(closest-side, hsl(var(--foil-4) / 0.7), transparent);
   animation: drift-b 52s ease-in-out infinite alternate;
 }
 .aurora > span {
@@ -424,7 +433,7 @@
   height: 42vmax;
   left: 38%;
   top: 34%;
-  background: radial-gradient(closest-side, hsl(var(--foil-4) / 0.4), transparent);
+  background: radial-gradient(closest-side, hsl(var(--foil-1) / 0.4), transparent);
   animation: drift-c 60s ease-in-out infinite alternate;
 }
 
@@ -465,14 +474,14 @@
 .animate-settle { animation: settle-in var(--dur-base) var(--ease) both; }
 .animate-rise { animation: rise 0.8s var(--ease) both; }
 .animate-float { animation: float-y 7s ease-in-out infinite; }
-/* A diagonal foil highlight that sweeps across a glass card now and then. */
+/* A diagonal highlight that sweeps across a glass card now and then. */
 .sheen {
   position: absolute;
   top: -25%;
   bottom: -25%;
   left: -45%;
   width: 38%;
-  background: linear-gradient(90deg, transparent, hsl(var(--foil-3) / 0.26), hsl(var(--foil-5) / 0.2), transparent);
+  background: linear-gradient(90deg, transparent, hsl(var(--foil-2) / 0.24), hsl(var(--foil-7) / 0.2), transparent);
   animation: sheen 8s ease-in-out infinite;
   pointer-events: none;
 }

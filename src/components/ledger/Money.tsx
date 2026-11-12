@@ -5,8 +5,8 @@ import { useMoney } from "@/vault/useLedger";
 interface MoneyProps {
   minor: number;
   /**
-   * expense → always shown as an outflow (coral, true minus). income → plain ink.
-   * Omit for signed values like a balance: negative numbers become coral with a minus.
+   * expense → always shown as an outflow (the red, true minus). income → plain ink.
+   * Omit for signed values like a balance: negative numbers become red with a minus.
    */
   kind?: "income" | "expense";
   compactWhole?: boolean;

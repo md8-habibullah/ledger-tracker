@@ -14,7 +14,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | D3 integer minor units | done | blanket approval |
 | D4 KDF | **PBKDF2-SHA256, 600,000 iterations** (WebCrypto, no dependency); algorithm and parameters are stored in the envelope so Argon2id can be added later | blanket approval |
 | D5 third-party launcher | removed from the app | blanket approval |
-| D6 design direction | **Superseded 2026-11-11 by "Banknote"** (owner asked for a bolder, next-generation look; Pearl + Vault themes). **Copy and the "Pearl" name approved by the owner the same day.** Owner rules since: no star/starburst ornaments, no purple/navy/cyan palette; the owner's own logo is the brand mark (REDESIGN §3.1, §3.4). Was: Green-bar Ledger, Paper + Vault themes, `/` + `/app/*` split; old themes and the donut chart dropped | blanket approval - **no prototype review happened** |
+| D6 design direction | **Superseded 2026-11-11 by "Banknote"** (owner asked for a bolder, next-generation look; Pearl + Vault themes). **Copy and the "Pearl" name approved by the owner the same day.** Owner rules since: no star/starburst ornaments; **from 2026-11-12 the whole product uses three colour families only (the logo's indigo `#5a5da9`, the logo's slate `#6d7987`, one red for money out/over budget/errors)**, which replaced the 2026-11-11 multi-colour palette and the old ban on indigo; the owner's own logo is the brand mark (REDESIGN §3.1, §3.4). Was: Green-bar Ledger, Paper + Vault themes, `/` + `/app/*` split; old themes and the donut chart dropped | blanket approval - **no prototype review happened** |
 | D7 brand | kept "Ledger Tracker"; `SITE.agency` (`src/config/site.ts`) is `null`, so no agency credit is shown | **open** |
 | D8 recovery key | mandatory acknowledgement (save it, or explicitly skip) | blanket approval |
 | pnpm allowlist | `allowBuilds` in `pnpm-workspace.yaml` | blanket approval |
@@ -27,7 +27,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | 0.2 green baseline | ✅ | tsc 0, eslint 0/0, `typecheck` script |
 | 0.3 delete dead code | ✅ | 37 shadcn files, 31 packages, old pages, `schema.sql`, wasm copy, screenshots, `scratch/` |
 | 0.4 network hygiene | ✅ | fonts self-hosted, launcher and avatar removed; the CSP went straight to **enforced** |
-| 0.5 tests + CI | 🟡 | 119 Vitest tests (Node, no DOM); `ci.yml` written but never run on GitHub; no component tests |
+| 0.5 tests + CI | 🟡 | 173 Vitest tests (Node, no DOM); `ci.yml` written but never run on GitHub; no component tests |
 | 0.6 tooling | ✅ | `packageManager`, `engines`, `allowBuilds`, dev host `localhost` |
 | 0.7 quick fixes | ✅ | |
 | 1.1 schema + migrations | ✅ | `PRAGMA user_version`; FKs on; legacy upgrade through `migrateLegacyUser` |
@@ -50,7 +50,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | 3.2 AppShell + routes | 🟡 | done; **no command palette** (`cmdk` removed); `N` opens a new entry; `g` then `o`/`e`/`b`/`c`/`s` jumps to a page; sidebar with live badges, month snapshot, budget watch, theme switch and a collapsible icon rail (REDESIGN §3.5); **no `?` shortcut sheet** |
 | 3.3 currency provider | 🟡 | one set of helpers + `<Money>`; no lint rule banning `Intl.NumberFormat`; no Bangla digits yet |
 | 3.4 categories manager | ✅ | add, rename, recolour, archive, merge |
-| 3.5 Overview | ✅ | |
+| 3.5 Overview | ✅ | month selector done 2026-11-12: quick ranges + month calendar, `?period=`, all figures respect it |
 | 3.6 Entries | 🟡 | filters, undo, banded rows, multi-select with bulk delete, keyboard; paged (scroll sentinel + "Show more"), **not virtualised**; no saved views; CSV export of the filtered view on Entries and of all entries under Settings → Data |
 | 3.7 Budgets v2 | 🟡 | periods, projection, thresholds; no rollover |
 | 3.8 Settings | 🟡 | four tabs (appearance, security, data, about); no separate Region tab |

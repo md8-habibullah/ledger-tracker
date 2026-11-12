@@ -88,6 +88,8 @@ describe("shipped logo files", () => {
   const files = [
     ...readdirSync(repoFile("public/brand")).filter((f) => f.endsWith(".svg")).map((f) => `public/brand/${f}`),
     "public/favicon.svg",
+    "public/favicon-light.svg",
+    "public/favicon-dark.svg",
     "public/logo.svg",
   ];
   const ADAPTIVE = ["public/favicon.svg", "public/logo.svg"];
@@ -113,6 +115,18 @@ describe("shipped logo files", () => {
     expect(svg).toContain(`.k{fill:${LOGO_COLORS.inkOnLight}}`);
     expect(svg).toContain(`@media (prefers-color-scheme:dark){.k{fill:${LOGO_COLORS.inkOnDark}}}`);
     expect(svg.match(/class="k"/g)).toHaveLength(LOGO_SHAPES.ink.length);
+  });
+
+  it("ships a tab icon per app theme: lt04 (black edges) for Pearl, lt02 (white edges) for Vault, both transparent", () => {
+    const inkFills = (file: string) => {
+      const svg = read(file);
+      expect(svg).not.toMatch(/<rect[^>]*(width="100%"|rx=)|<circle/);
+      const fills = [...svg.matchAll(/<(?:polygon|path|rect)[^>]*fill="(#[0-9a-f]{6})"/g)].map((m) => m[1]);
+      expect(fills).toHaveLength(LOGO_SHAPES.slate.length + LOGO_SHAPES.indigo.length + LOGO_SHAPES.ink.length);
+      return fills.slice(LOGO_SHAPES.slate.length + LOGO_SHAPES.indigo.length);
+    };
+    expect(inkFills("public/favicon-light.svg")).toEqual(Array(LOGO_SHAPES.ink.length).fill(LOGO_COLORS.inkOnLight));
+    expect(inkFills("public/favicon-dark.svg")).toEqual(Array(LOGO_SHAPES.ink.length).fill(LOGO_COLORS.inkOnDark));
   });
 
   it("ships no tile or background version of the logo", () => {

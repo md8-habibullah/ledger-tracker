@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { applyFavicon } from "./favicon";
 
 export type ThemePreference = "system" | "paper" | "vault";
 export type Density = "comfortable" | "compact";
@@ -47,6 +48,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.classList.toggle("dark", resolved === "vault");
     root.setAttribute("data-theme", resolved);
+    applyFavicon(resolved);
     if (density === "compact") root.setAttribute("data-density", "compact");
     else root.removeAttribute("data-density");
   }, [resolved, density]);

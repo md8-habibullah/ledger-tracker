@@ -35,7 +35,7 @@ function badgeFor(item: NavItem, summary: SidebarSummary | null): Badge | null {
 const PILL_TONE: Record<Badge["tone"], string> = {
   count: "text-muted-foreground",
   ok: "text-muted-foreground",
-  near: "bg-[hsl(var(--foil-4))] text-[hsl(30_14%_8%)]",
+  near: "bg-warn text-warn-foreground",
   over: "bg-destructive text-destructive-foreground",
 };
 
@@ -74,7 +74,7 @@ function SidebarLink({ item, summary, collapsed }: { item: NavItem; summary: Sid
                 {badge && (badge.tone === "near" || badge.tone === "over") ? (
                   <span
                     aria-hidden
-                    className={cn("absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full shadow-[0_0_0_2px_hsl(var(--background))]", badge.tone === "over" ? "bg-destructive" : "bg-[hsl(var(--foil-4))]")}
+                    className={cn("absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full shadow-[0_0_0_2px_hsl(var(--background))]", badge.tone === "over" ? "bg-destructive" : "bg-warn")}
                   />
                 ) : null}
               </>

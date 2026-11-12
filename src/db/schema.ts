@@ -13,24 +13,24 @@ export interface DefaultCategory {
   kind: "income" | "expense";
 }
 
-/** Muted mid-tones that keep ≥3:1 against both Pearl and Vault surfaces. */
+/** Indigo and slate tones only (the brand palette). Each holds 3:1 or more with a white icon and against both the Pearl and Vault surfaces. */
 export const DEFAULT_CATEGORIES: readonly DefaultCategory[] = [
-  { name: "Salary", icon: "Banknote", color: "#1E8A4D", kind: "income" },
-  { name: "Freelance", icon: "Laptop", color: "#60831B", kind: "income" },
-  { name: "Investments", icon: "TrendingUp", color: "#2B8B27", kind: "income" },
-  { name: "Business", icon: "Briefcase", color: "#A36F14", kind: "income" },
-  { name: "Food & Dining", icon: "Utensils", color: "#C55911", kind: "expense" },
-  { name: "Transportation", icon: "Bus", color: "#8B760E", kind: "expense" },
-  { name: "Shopping", icon: "ShoppingBag", color: "#D34558", kind: "expense" },
-  { name: "Entertainment", icon: "Music", color: "#D0437C", kind: "expense" },
-  { name: "Bills & Utilities", icon: "Receipt", color: "#DC3D38", kind: "expense" },
-  { name: "Healthcare", icon: "Stethoscope", color: "#268764", kind: "expense" },
-  { name: "Education", icon: "BookOpen", color: "#76801E", kind: "expense" },
-  { name: "Travel", icon: "MapPin", color: "#AD6B1F", kind: "expense" },
-  { name: "Subscriptions", icon: "CreditCard", color: "#D94520", kind: "expense" },
-  { name: "Family", icon: "Users", color: "#B36442", kind: "expense" },
-  { name: "Charity", icon: "HandHeart", color: "#2B883A", kind: "expense" },
-  { name: "Home", icon: "Home", color: "#837663", kind: "expense" },
+  { name: "Salary", icon: "Banknote", color: "#5C5FAD", kind: "income" },
+  { name: "Freelance", icon: "Laptop", color: "#6669B2", kind: "income" },
+  { name: "Investments", icon: "TrendingUp", color: "#7173B7", kind: "income" },
+  { name: "Business", icon: "Briefcase", color: "#7B7DBC", kind: "income" },
+  { name: "Food & Dining", icon: "Utensils", color: "#7173B7", kind: "expense" },
+  { name: "Transportation", icon: "Bus", color: "#6D7987", kind: "expense" },
+  { name: "Shopping", icon: "ShoppingBag", color: "#5C5FAD", kind: "expense" },
+  { name: "Entertainment", icon: "Music", color: "#818E9C", kind: "expense" },
+  { name: "Bills & Utilities", icon: "Receipt", color: "#6669B2", kind: "expense" },
+  { name: "Healthcare", icon: "Stethoscope", color: "#768493", kind: "expense" },
+  { name: "Education", icon: "BookOpen", color: "#8587C1", kind: "expense" },
+  { name: "Travel", icon: "MapPin", color: "#636F7E", kind: "expense" },
+  { name: "Subscriptions", icon: "CreditCard", color: "#7B7DBC", kind: "expense" },
+  { name: "Family", icon: "Users", color: "#768493", kind: "expense" },
+  { name: "Charity", icon: "HandHeart", color: "#5C5FAD", kind: "expense" },
+  { name: "Home", icon: "Home", color: "#636F7E", kind: "expense" },
 ];
 
 interface Migration {

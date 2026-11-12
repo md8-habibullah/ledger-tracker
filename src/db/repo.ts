@@ -65,7 +65,7 @@ const minorSchema = z
   .max(MAX_MINOR, "That amount is too large");
 const dateSchema = z.string().refine(isDateString, "Enter a valid date");
 const noteSchema = z.string().trim().max(500, "Keep the note under 500 characters");
-const colorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a 6-digit hex colour like #2F7D5B");
+const colorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a 6-digit hex colour like #5A5DA9");
 
 export const transactionInputSchema = z.object({
   kind: kindSchema,

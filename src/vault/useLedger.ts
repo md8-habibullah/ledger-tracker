@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { type Budget, type Category, type Transaction, ValidationError, listBudgets, listCategories, listTransactions } from "@/db/repo";
 import { type Database, withTransaction } from "@/db/sql";
 import { todayLocal } from "@/lib/dates";
+import { currentCategoryColor } from "@/lib/legacyCategoryColors";
 import { DEFAULT_CURRENCY, type FormatOptions, currencyInfo, formatMoney } from "@/lib/money";
 import { type Stats, computeStats } from "@/lib/stats";
 import { useVault } from "./VaultProvider";
@@ -31,7 +32,7 @@ export function useLedger(): LedgerData | null {
     if (!service || snapshot.status !== "unlocked") return null;
     const db = service.database();
     const transactions = listTransactions(db);
-    const allCategories = listCategories(db, { includeArchived: true });
+    const allCategories = listCategories(db, { includeArchived: true }).map((c) => ({ ...c, color: currentCategoryColor(c.color) }));
     const settings = service.settings();
     const today = todayLocal();
     return {

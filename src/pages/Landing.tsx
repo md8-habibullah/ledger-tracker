@@ -183,8 +183,8 @@ export default function Landing() {
             <div className="grid items-center gap-5 md:grid-cols-[minmax(0,1fr)_auto]">
               <p className="max-w-2xl text-muted-foreground">Vault (dark) and Pearl (light) themes, a compact row density, and the <Kbd>N</Kbd> key for a new entry from anywhere.</p>
               <div className="flex gap-3" aria-hidden>
-                <span className="grid h-14 w-24 place-items-center rounded-md text-xs font-medium text-[#F4EFE6] shadow-[0_0_0_1px_hsl(0_0%_100%/0.14)_inset]" style={{ background: "linear-gradient(135deg,#14120F,#2A2520)" }}>Vault</span>
-                <span className="grid h-14 w-24 place-items-center rounded-md text-xs font-medium text-[#0E1A14] shadow-[0_0_0_1px_hsl(150_20%_20%/0.18)_inset]" style={{ background: "linear-gradient(135deg,#FFFFFF,#EEF2E4)" }}>Pearl</span>
+                <span className="grid h-14 w-24 place-items-center rounded-md text-xs font-medium text-[#EFF1F5] shadow-[0_0_0_1px_hsl(0_0%_100%/0.14)_inset]" style={{ background: "linear-gradient(135deg,#101316,#1D2227)" }}>Vault</span>
+                <span className="grid h-14 w-24 place-items-center rounded-md text-xs font-medium text-[#111622] shadow-[0_0_0_1px_hsl(224_20%_20%/0.18)_inset]" style={{ background: "linear-gradient(135deg,#FFFFFF,#E7EAF1)" }}>Pearl</span>
               </div>
             </div>
           </Tile>

@@ -7,7 +7,8 @@ Each theme comes from its own file:
 
 Usage (from the repo root):  python3 -I docs/brand/build-logo-kit.py docs/brand/originals .
 Needs rsvg-convert (librsvg) and ImageMagick (`magick`). It rewrites public/brand/*, public/favicon.svg,
-public/favicon.ico, public/logo.svg, public/apple-touch-icon.png and src/components/brand/logoGeometry.ts.
+public/favicon-light.svg, public/favicon-dark.svg, public/favicon.ico, public/logo.svg, public/apple-touch-icon.png
+and src/components/brand/logoGeometry.ts.
 
 Geometry and colours are parsed from the owner's files, never retyped; the two files must be the same drawing
 (this script stops if they are not). Only the layout (crop, padding) is decided here. See docs/brand/README.md.
@@ -139,6 +140,10 @@ for stale in brand.glob("tile-*"):  # an earlier kit shipped tiles; the logo is 
 # favicon and /logo.svg are transparent and follow the viewer's colour scheme: dark ink on light, white ink on dark
 (REPO / "public" / "favicon.svg").write_text(transparent(None, pad_ratio=0.02, square=1, adaptive=True))
 (REPO / "public" / "logo.svg").write_text(transparent(None, adaptive=True))
+# The app swaps the tab icon to match ITS theme button (Pearl or Vault), which can differ from the browser's scheme:
+# favicon-light.svg = lt04 (black edges, for Pearl), favicon-dark.svg = lt02 (white edges, for Vault). Fixed ink, no <style>.
+(REPO / "public" / "favicon-light.svg").write_text(transparent(INK_ON_LIGHT, pad_ratio=0.02, square=1))
+(REPO / "public" / "favicon-dark.svg").write_text(transparent(INK_ON_DARK, pad_ratio=0.02, square=1))
 
 # apple-touch-icon: iOS puts a black ground behind transparency, so this one carries the white ink
 (tmp / "apple.svg").write_text(transparent(INK_ON_DARK, pad_ratio=0.1, square=1))
@@ -149,11 +154,10 @@ for name in ("mark-on-light", "mark-on-dark"):
     subprocess.run(["rsvg-convert", "-w", "512", str(brand / f"{name}.svg"), "-o", str(brand / f"{name}-512.png")], check=True)
 
 # favicon.ico: 16, 32 and 48, transparent with the dark ink (an .ico cannot follow the colour scheme; browsers use the svg)
-(tmp / "favicon-light.svg").write_text(transparent(INK_ON_LIGHT, pad_ratio=0.02, square=1))
 pngs = []
 for px in (16, 32, 48):
     out = tmp / f"fav-{px}.png"
-    subprocess.run(["rsvg-convert", "-w", str(px), "-h", str(px), str(tmp / "favicon-light.svg"), "-o", str(out)], check=True)
+    subprocess.run(["rsvg-convert", "-w", str(px), "-h", str(px), str(REPO / "public" / "favicon-light.svg"), "-o", str(out)], check=True)
     pngs.append(str(out))
 subprocess.run(["magick", *pngs, str(REPO / "public" / "favicon.ico")], check=True)
 

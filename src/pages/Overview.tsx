@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Wallet } from "lucide-react";
 import { Glow } from "@/components/fx/Glow";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,13 @@ import { CategoryChip, EmptyState, PageHeader, RuleSection } from "@/components/
 import { CashFlowChart, ProgressRule, RankedBars, Sparkline } from "@/components/ledger/charts";
 import { useEntrySheet } from "@/components/ledger/EntrySheet";
 import { Money } from "@/components/ledger/Money";
+import { PeriodPicker } from "@/components/ledger/PeriodPicker";
 import { QuickEntryBar } from "@/components/ledger/QuickEntryBar";
-import { addMonths, formatDayLabel, inRange, monthRange, parseDate } from "@/lib/dates";
+import { formatDayLabel, inRange, monthRange, parseDate } from "@/lib/dates";
 import { computeInsights } from "@/lib/insights";
+import { type PeriodId, computePeriodStats, ledgerMonths, resolvePeriod } from "@/lib/period";
 import { budgetProgress } from "@/lib/stats";
 import { useLedger } from "@/vault/useLedger";
-
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 function Figure({ label, children, note, spark, tone }: { label: string; children: React.ReactNode; note?: React.ReactNode; spark?: number[]; tone: "in" | "out" | "net" }) {
   return (
@@ -31,43 +31,56 @@ function Figure({ label, children, note, spark, tone }: { label: string; childre
 export default function Overview() {
   const ledger = useLedger();
   const { openNew, openEdit } = useEntrySheet();
+  // The period lives in the URL (?period=last-3 or ?period=2026-09): it survives moving around and Back, and the Overview link resets it.
+  const [params, setParams] = useSearchParams();
+  const requested = params.get("period");
 
   const view = useMemo(() => {
     if (!ledger) return null;
+    const period = resolvePeriod(requested, ledger.today);
+    const stats = computePeriodStats(ledger.transactions, period);
     const now = parseDate(ledger.today);
-    const prev = monthRange(addMonths(now, -1));
-    const previousByCategory = new Map<number, number>();
-    for (const t of ledger.transactions) {
-      if (t.kind === "expense" && inRange(t.occurredOn, prev)) previousByCategory.set(t.categoryId, (previousByCategory.get(t.categoryId) ?? 0) + t.amountMinor);
-    }
-    const ranked = [...ledger.stats.expenseByCategory]
+    const ranked = [...stats.expenseByCategory]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
-      .map(([id, amountMinor]) => ({ category: ledger.categoryById.get(id), amountMinor, previousMinor: previousByCategory.get(id) ?? 0 }));
+      .map(([id, amountMinor]) => ({ category: ledger.categoryById.get(id), amountMinor, previousMinor: stats.previousByCategory.get(id) ?? 0 }));
     const budgets = ledger.budgets
       .map((b) => budgetProgress(b, ledger.transactions, ledger.today))
       .sort((a, b) => b.pct - a.pct)
       .slice(0, 3);
     const lastDay = Number(monthRange(now).to.slice(8, 10));
     return {
-      now,
+      period,
+      stats,
+      months: ledgerMonths(ledger.transactions, ledger.today),
       ranked,
       budgets,
       daysLeft: lastDay - now.getDate(),
       insights: computeInsights(ledger.transactions, ledger.categoryById, ledger.currency, ledger.today),
-      recent: ledger.transactions.slice(0, 8),
+      // This month keeps showing the latest entries overall; any other period lists its own latest entries.
+      recent: (period.id === "this-month" ? ledger.transactions : ledger.transactions.filter((t) => inRange(t.occurredOn, period.range))).slice(0, 8),
     };
-  }, [ledger]);
+  }, [ledger, requested]);
 
   if (!ledger || !view) return null;
-  const { stats } = ledger;
+  const { period, stats } = view;
   const empty = ledger.transactions.length === 0;
+  const thisMonth = period.id === "this-month";
+  const setPeriod = (id: PeriodId) => setParams(id === "this-month" ? {} : { period: id }, { replace: true });
+  // The heading already names any other period, so only "this month" keeps its tail (as it always read).
+  const label = (base: string) => (thisMonth ? `${base} this month` : base);
+  const entries = `${stats.entryCount} ${stats.entryCount === 1 ? "entry" : "entries"}`;
 
   return (
     <>
       <PageHeader
-        title={`${MONTH_NAMES[view.now.getMonth()]} so far`}
-        description={view.daysLeft === 0 ? "Last day of the month" : `${view.daysLeft} day${view.daysLeft === 1 ? "" : "s"} left in the month`}
+        title={period.title}
+        description={
+          thisMonth
+            ? view.daysLeft === 0 ? "Last day of the month" : `${view.daysLeft} day${view.daysLeft === 1 ? "" : "s"} left in the month`
+            : `${period.months.length > 1 ? `${period.span} · ` : ""}${entries}`
+        }
+        actions={empty ? undefined : <PeriodPicker value={period} months={view.months} today={ledger.today} onChange={setPeriod} />}
       />
 
       <QuickEntryBar />
@@ -89,80 +102,87 @@ export default function Overview() {
                 <p className="text-muted-foreground">Balance</p>
                 <p className="mt-3 text-[clamp(2.25rem,5.4vw,3.75rem)] leading-none"><Money minor={stats.balanceMinor} animate className="glow-text" /></p>
               </div>
-              <p className="relative z-10 mt-8 text-sm text-muted-foreground">All entries, every month</p>
+              <p className="relative z-10 mt-8 text-sm text-muted-foreground">
+                {period.includesCurrentMonth ? "All entries, every month" : `Everything up to the end of ${period.span}`}
+              </p>
             </section>
             <dl className="glass p-6">
-              <Figure label="Money in this month" tone="in" spark={stats.trend.map((p) => p.incomeMinor)}>
-                <Money minor={stats.monthIncomeMinor} kind="income" animate />
+              <Figure label={label("Money in")} tone="in" spark={stats.trend.map((p) => p.incomeMinor)}>
+                <Money minor={stats.incomeMinor} kind="income" animate />
               </Figure>
               <div className="border-t border-foreground/[0.08]" />
               <Figure
-                label="Money out this month"
+                label={label("Money out")}
                 tone="out"
                 spark={stats.trend.map((p) => p.expenseMinor)}
                 note={
                   stats.expenseChangePct === null
-                    ? "No spending last month to compare"
-                    : `${stats.expenseChangePct >= 0 ? "Up" : "Down"} ${Math.abs(Math.round(stats.expenseChangePct))}% from last month`
+                    ? `No spending ${thisMonth ? "last month" : `in ${period.previousFrom}`} to compare`
+                    : `${stats.expenseChangePct >= 0 ? "Up" : "Down"} ${Math.abs(Math.round(stats.expenseChangePct))}% from ${period.previousFrom}`
                 }
               >
-                <Money minor={stats.monthExpenseMinor} kind="expense" animate />
+                <Money minor={stats.expenseMinor} kind="expense" animate />
               </Figure>
               <div className="border-t border-foreground/[0.08]" />
               <Figure
-                label={stats.monthSavedMinor < 0 ? "Overspent this month" : "Kept this month"}
+                label={label(stats.savedMinor < 0 ? "Overspent" : "Kept")}
                 tone="net"
                 spark={stats.trend.map((p) => p.incomeMinor - p.expenseMinor)}
-                note={stats.savingsRatePct === null ? "No income recorded yet" : `${Math.round(stats.savingsRatePct)}% of income`}
+                note={stats.savingsRatePct === null ? (period.includesCurrentMonth ? "No income recorded yet" : "No income recorded") : `${Math.round(stats.savingsRatePct)}% of income`}
               >
-                <Money minor={stats.monthSavedMinor} animate />
+                <Money minor={stats.savedMinor} animate />
               </Figure>
             </dl>
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="grid content-start gap-5">
-              <RuleSection title="Cash flow" description="Last six months">
-                <CashFlowChart data={stats.trend} currency={ledger.currency} />
+              <RuleSection title="Cash flow" description={period.months.length > 1 ? period.span : thisMonth ? "Last six months" : `Six months up to ${period.span}`}>
+                <CashFlowChart data={stats.series} currency={ledger.currency} />
               </RuleSection>
 
               <RuleSection
-                title="Recent entries"
+                title={thisMonth ? "Recent entries" : "Latest in this period"}
                 actions={<Link className="text-primary underline underline-offset-2" to="/app/entries">All entries</Link>}
               >
-                <ul className="-mx-2 divide-y divide-foreground/[0.07]">
-                  {view.recent.map((t) => (
-                    <li key={t.id}>
-                      <button
-                        type="button"
-                        onClick={() => openEdit(t)}
-                        className="grid w-full grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-2 py-3 text-left transition-colors duration-fast hover:bg-foreground/[0.06]"
-                        aria-label={`Edit entry: ${t.note || "no note"}`}
-                      >
-                        <span className="text-muted-foreground">{formatDayLabel(t.occurredOn, ledger.today)}</span>
-                        <span className="grid min-w-0">
-                          <CategoryChip category={ledger.categoryById.get(t.categoryId)} />
-                          {t.note ? <span className="truncate pl-7 text-sm text-muted-foreground">{t.note}</span> : null}
-                        </span>
-                        <Money minor={t.amountMinor} kind={t.kind} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {view.recent.length === 0 ? (
+                  <p className="text-muted-foreground">No entries {period.when}.</p>
+                ) : (
+                  <ul className="-mx-2 divide-y divide-foreground/[0.07]">
+                    {view.recent.map((t) => (
+                      <li key={t.id}>
+                        <button
+                          type="button"
+                          onClick={() => openEdit(t)}
+                          className="grid w-full grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-2 py-3 text-left transition-colors duration-fast hover:bg-foreground/[0.06]"
+                          aria-label={`Edit entry: ${t.note || "no note"}`}
+                        >
+                          <span className="text-muted-foreground">{formatDayLabel(t.occurredOn, ledger.today)}</span>
+                          <span className="grid min-w-0">
+                            <CategoryChip category={ledger.categoryById.get(t.categoryId)} />
+                            {t.note ? <span className="truncate pl-7 text-sm text-muted-foreground">{t.note}</span> : null}
+                          </span>
+                          <Money minor={t.amountMinor} kind={t.kind} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </RuleSection>
             </div>
 
             <div className="grid content-start gap-5">
-              <RuleSection title="Where it went" description="Top spending this month">
+              <RuleSection title="Where it went" description={`Top spending ${period.when}`}>
                 {view.ranked.length === 0 ? (
-                  <p className="text-muted-foreground">No spending recorded this month yet.</p>
+                  <p className="text-muted-foreground">No spending recorded {period.when}{period.includesCurrentMonth ? " yet" : ""}.</p>
                 ) : (
-                  <RankedBars rows={view.ranked} totalMinor={stats.monthExpenseMinor} />
+                  <RankedBars rows={view.ranked} totalMinor={stats.expenseMinor} against={period.previousFrom} />
                 )}
               </RuleSection>
 
               <RuleSection
                 title="Budgets"
+                description={thisMonth ? undefined : "Live, as of today"}
                 actions={<Link className="text-primary underline underline-offset-2" to="/app/budgets">Manage</Link>}
               >
                 {view.budgets.length === 0 ? (

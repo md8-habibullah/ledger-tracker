@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import { CategoryMark } from "./bits";
 import { Money } from "./Money";
 
-/* Chart marks use --chart-in / --chart-out: colours checked with the dataviz validator against both surfaces
-   (lightness band, colour-vision separation, contrast). Text never wears them; identity rides the swatch beside it. */
+/* Chart marks use --chart-in (indigo) / --chart-out (red): apart in lightness as well as hue, and 3:1 or more on both surfaces
+   (src/theme/palette.test.ts). Text never wears them; identity rides the swatch beside it. */
 
 /* ------------------------------------------------------------------ Cash flow */
 
@@ -74,11 +74,11 @@ export function CashFlowChart({ data, currency }: { data: MonthPoint[]; currency
 export interface RankedRow {
   category: Category | undefined;
   amountMinor: number;
-  /** Same category last month (full month), for the comparison note. */
+  /** Same category in the span being compared against (last month, the month before, ...), for the comparison note. */
   previousMinor: number;
 }
 
-export function RankedBars({ rows, totalMinor }: { rows: RankedRow[]; totalMinor: number }) {
+export function RankedBars({ rows, totalMinor, against = "last month" }: { rows: RankedRow[]; totalMinor: number; against?: string }) {
   const max = Math.max(...rows.map((r) => r.amountMinor), 1);
   return (
     <ol className="grid gap-4">
@@ -103,7 +103,7 @@ export function RankedBars({ rows, totalMinor }: { rows: RankedRow[]; totalMinor
             </div>
             {change !== null ? (
               <p className="text-xs text-muted-foreground">
-                {change === 0 ? "Same as last month" : `${change > 0 ? "Up" : "Down"} ${Math.abs(change)}% from last month`}
+                {change === 0 ? `Same as ${against}` : `${change > 0 ? "Up" : "Down"} ${Math.abs(change)}% from ${against}`}
               </p>
             ) : null}
           </li>
@@ -117,16 +117,17 @@ export function RankedBars({ rows, totalMinor }: { rows: RankedRow[]; totalMinor
 
 const STATUS_LABEL: Record<BudgetStatus, string> = { ok: "Within the limit", near: "Close to the limit", over: "Over budget" };
 
+/* Indigo while it is fine, the lighter red step when it is close, the red once it is over. Words carry the status too. */
 const STATUS_GLOW: Record<BudgetStatus, string> = {
-  ok: "0 0 16px -1px hsl(var(--foil-2) / 0.7)",
-  near: "0 0 16px -1px hsl(var(--foil-4) / 0.7)",
-  over: "0 0 16px -1px hsl(var(--foil-6) / 0.7)",
+  ok: "0 0 16px -1px hsl(var(--foil-1) / 0.55)",
+  near: "0 0 16px -1px hsl(var(--warn) / 0.6)",
+  over: "0 0 16px -1px hsl(var(--destructive) / 0.6)",
 };
 
 const STATUS_FILL: Record<BudgetStatus, string> = {
-  ok: "linear-gradient(90deg, hsl(var(--foil-1)), hsl(var(--foil-2)))",
-  near: "linear-gradient(90deg, hsl(var(--foil-3)), hsl(var(--foil-4)))",
-  over: "linear-gradient(90deg, hsl(var(--foil-5)), hsl(var(--foil-6)))",
+  ok: "linear-gradient(90deg, hsl(var(--foil-5)), hsl(var(--foil-1)))",
+  near: "hsl(var(--warn))",
+  over: "hsl(var(--destructive))",
 };
 
 /** A glowing gauge. Status is also spelled out in words, so colour is never the only signal. `compact` is a thin bar for tight spots: the caller must then print the percentage and status as text itself. */

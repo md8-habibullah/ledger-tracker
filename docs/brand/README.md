@@ -30,7 +30,7 @@ The logo is **always the transparent mark, never on a tile or a coloured box**. 
 | A dark surface (Vault, `#191d20`) | `brand/mark-on-dark.svg` (from `lt02`) | white |
 | The app (every theme) | `<Logo />` | follows the theme: dark on Pearl, white on Vault |
 | PNG only (slides, social, avatars) | `brand/mark-on-light-512.png`, `brand/mark-on-dark-512.png` | as named |
-| Browser tab | `favicon.svg` (transparent, follows the browser's light or dark scheme), `favicon.ico` (fallback, black ink) | scheme |
+| Browser tab | the app swaps in `favicon-light.svg` (from `lt04`, black edges) on Pearl and `favicon-dark.svg` (from `lt02`, white edges) on Vault, so the tab icon matches the theme button. `favicon.svg` (transparent, follows the browser's light or dark scheme) is the first-paint default; `favicon.ico` is a black-ink fallback | theme |
 | A stable "the logo" URL | `/logo.svg` (transparent, follows the viewer's scheme) | scheme |
 | iOS home screen | `apple-touch-icon.png` (white ink; iOS puts a black ground behind transparency) | white |
 
@@ -54,7 +54,7 @@ ground the mark can lose parts, so pick the ink that contrasts and keep the grou
 <LogoMark tone="on-dark" />             // fixed white ink, for a dark surface you control
 ```
 
-Colours are tokens in `src/index.css`: `--logo-indigo`, `--logo-slate`, `--logo-ink` (dark in Pearl, white in Vault).
+Colours are tokens in `src/index.css`: `--logo-indigo`, `--logo-slate`, `--logo-ink` (dark in Pearl, white in Vault). Since 2026-11-12 the whole app palette is built from these same two colours (indigo `#5a5da9`, slate `#6d7987`) plus one red for money out and errors; see `docs/ai/REDESIGN-AND-SHOWCASE.md` §3.1–3.2.
 Do not change them: they are the owner's values. The shapes live in `src/components/brand/logoGeometry.ts` and are
 generated, not hand-edited.
 
@@ -90,6 +90,6 @@ sets the name next to the mark in its own type, as it always has.
 python3 -I docs/brand/build-logo-kit.py docs/brand/originals .
 ```
 
-Needs `rsvg-convert` (librsvg) and ImageMagick's `magick`. It rewrites `public/brand/*`, the favicons, `/logo.svg`,
+Needs `rsvg-convert` (librsvg) and ImageMagick's `magick`. It rewrites `public/brand/*`, the favicons (`favicon.svg`, `favicon-light.svg`, `favicon-dark.svg`, `favicon.ico`), `/logo.svg`,
 `public/apple-touch-icon.png` and `logoGeometry.ts`. Run `pnpm test` after: the logo tests compare the result with
 `originals/`.

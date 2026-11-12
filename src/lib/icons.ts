@@ -18,8 +18,11 @@ export function categoryIcon(name: string | undefined): LucideIcon {
   return (name && CATEGORY_ICONS[name]) || Tag;
 }
 
-/** Swatches for new categories: muted mid-tones that read on both Pearl and Vault. */
+/**
+ * Swatches for categories: indigo and slate tones only (the brand palette). Each is 3:1 or more with a white icon AND
+ * against both the Pearl and the Vault surface, so none can be too dark to see in Vault or too light for the icon.
+ */
 export const CATEGORY_COLORS = [
-  "#1E8A4D", "#2B883A", "#60831B", "#76801E", "#8B760E", "#AD6B1F",
-  "#C55911", "#D94520", "#DC3D38", "#D34558", "#D0437C", "#837663",
+  "#5C5FAD", "#6669B2", "#7173B7", "#7B7DBC", "#8587C1",
+  "#636F7E", "#6D7987", "#768493", "#818E9C",
 ] as const;

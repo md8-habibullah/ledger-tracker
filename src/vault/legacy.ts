@@ -66,7 +66,7 @@ function toMinor(value: unknown): number | null {
   return minor > 0 && minor <= MAX_MINOR ? minor : null;
 }
 
-const FALLBACK_COLOR = "#837663";
+const FALLBACK_COLOR = "#6D7987";
 const validColor = (c: unknown): string => (typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c) ? c : FALLBACK_COLOR);
 
 /** Copy one legacy user's data into `target` (already migrated to the current schema). Runs inside the caller's transaction. */

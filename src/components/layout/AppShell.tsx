@@ -93,7 +93,7 @@ function Shell() {
               <Button onClick={() => openNew()} className="gap-2 rounded-full pl-4 pr-5 max-sm:gap-0 max-sm:px-3.5">
                 <Plus className="h-4 w-4" aria-hidden />
                 <span className="max-sm:sr-only">New entry</span>
-                <span className="hidden lg:inline [&_kbd]:bg-black/15 [&_kbd]:text-[hsl(var(--btn-fg))] [&_kbd]:shadow-none"><Kbd>N</Kbd></span>
+                <span className="hidden lg:inline [&_kbd]:bg-white/20 [&_kbd]:text-[hsl(var(--btn-fg))] [&_kbd]:shadow-none"><Kbd>N</Kbd></span>
               </Button>
               <Button variant="ghost" size="icon" className="rounded-full md:hidden" aria-label={snapshot.ephemeral ? "Exit demo" : "Lock now"} onClick={() => void lock("manual")}>
                 <Lock className="h-4 w-4" aria-hidden />
@@ -138,7 +138,7 @@ function Shell() {
               {label}
               {alert ? (
                 <>
-                  <span aria-hidden className={cn("absolute right-[22%] top-1.5 h-2.5 w-2.5 rounded-full shadow-[0_0_0_2px_hsl(var(--background))]", alert.worst === "over" ? "bg-destructive" : "bg-[hsl(var(--foil-4))]")} />
+                  <span aria-hidden className={cn("absolute right-[22%] top-1.5 h-2.5 w-2.5 rounded-full shadow-[0_0_0_2px_hsl(var(--background))]", alert.worst === "over" ? "bg-destructive" : "bg-warn")} />
                   <span className="sr-only">, {alert.alerts} near or over the limit</span>
                 </>
               ) : null}

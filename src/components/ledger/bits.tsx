@@ -12,7 +12,7 @@ export function CategoryMark({ category, size = 24, className }: { category?: Pi
     <span
       aria-hidden
       className={cn("inline-flex shrink-0 items-center justify-center rounded-md text-white shadow-[inset_0_1px_0_hsl(0_0%_100%/0.28),0_4px_12px_-4px_var(--mark)]", className)}
-      style={{ width: size, height: size, backgroundColor: category?.color ?? "#837663", ["--mark" as string]: category?.color ?? "#837663" }}
+      style={{ width: size, height: size, backgroundColor: category?.color ?? "#6D7987", ["--mark" as string]: category?.color ?? "#6D7987" }}
     >
       <Icon size={Math.round(size * 0.62)} strokeWidth={2} />
     </span>
