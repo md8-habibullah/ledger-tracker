@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CategoryChip, EmptyState, Kbd, PageHeader } from "@/components/ledger/bits";
 import { useEntrySheet } from "@/components/ledger/EntrySheet";
+import { ImportButton } from "@/components/ledger/ImportDialog";
 import { Money } from "@/components/ledger/Money";
 import { type Kind, type Transaction, deleteTransactions, restoreTransactions } from "@/db/repo";
 import { transactionsToCsv, downloadText } from "@/lib/csv";
@@ -120,6 +121,7 @@ export default function Entries() {
         description={`${ledger.transactions.length} in this vault`}
         actions={
           <>
+            <ImportButton origin="csv">Import CSV</ImportButton>
             <Button variant="outline" className="gap-2" onClick={exportCsv} disabled={filtered.length === 0}>
               <FileDown className="h-4 w-4" aria-hidden />Export CSV
             </Button>
@@ -199,10 +201,14 @@ export default function Entries() {
             <div className="mt-4 px-1">{strip}</div>
             <EmptyState
               title={filtersActive ? "Nothing matches these filters" : "No entries yet"}
-              action={filtersActive ? <Button variant="outline" onClick={clearFilters}>Clear filters</Button> : <Button onClick={() => openNew()}>Add your first entry</Button>}
+              action={
+                filtersActive
+                  ? <Button variant="outline" onClick={clearFilters}>Clear filters</Button>
+                  : <div className="flex flex-wrap gap-2"><Button onClick={() => openNew()}>Add your first entry</Button><ImportButton origin="csv">Import a CSV file</ImportButton></div>
+              }
               className="mt-4"
             >
-              {filtersActive ? "Try a wider date range or fewer filters." : "Entries you add show up here, newest first."}
+              {filtersActive ? "Try a wider date range or fewer filters." : "Entries you add show up here, newest first. Moving from a spreadsheet or another device? Import the CSV file you exported."}
             </EmptyState>
           </>
         ) : (

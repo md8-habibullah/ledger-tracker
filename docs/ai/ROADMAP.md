@@ -27,7 +27,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | 0.2 green baseline | ✅ | tsc 0, eslint 0/0, `typecheck` script |
 | 0.3 delete dead code | ✅ | 37 shadcn files, 31 packages, old pages, `schema.sql`, wasm copy, screenshots, `scratch/` |
 | 0.4 network hygiene | ✅ | fonts self-hosted, launcher and avatar removed; the CSP went straight to **enforced** |
-| 0.5 tests + CI | 🟡 | 173 Vitest tests (Node, no DOM); `ci.yml` written but never run on GitHub; no component tests |
+| 0.5 tests + CI | 🟡 | 254 Vitest tests (Node, no DOM); `ci.yml` written but never run on GitHub; no component tests |
 | 0.6 tooling | ✅ | `packageManager`, `engines`, `allowBuilds`, dev host `localhost` |
 | 0.7 quick fixes | ✅ | |
 | 1.1 schema + migrations | ✅ | `PRAGMA user_version`; FKs on; legacy upgrade through `migrateLegacyUser` |
@@ -51,7 +51,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | 3.3 currency provider | 🟡 | one set of helpers + `<Money>`; no lint rule banning `Intl.NumberFormat`; no Bangla digits yet |
 | 3.4 categories manager | ✅ | add, rename, recolour, archive, merge |
 | 3.5 Overview | ✅ | month selector done 2026-11-12: quick ranges + month calendar, `?period=`, all figures respect it |
-| 3.6 Entries | 🟡 | filters, undo, banded rows, multi-select with bulk delete, keyboard; paged (scroll sentinel + "Show more"), **not virtualised**; no saved views; CSV export of the filtered view on Entries and of all entries under Settings → Data |
+| 3.6 Entries | 🟡 | filters, undo, banded rows, multi-select with bulk delete, keyboard; paged (scroll sentinel + "Show more"), **not virtualised**; no saved views; CSV export of the filtered view on Entries and of all entries under Settings → Data; CSV import on Entries and under Settings → Data |
 | 3.7 Budgets v2 | 🟡 | periods, projection, thresholds; no rollover |
 | 3.8 Settings | 🟡 | four tabs (appearance, security, data, about); no separate Region tab |
 | 3.9 Create & Unlock + Seal | ✅ | backoff after failed attempts; erase flow kept |
@@ -59,7 +59,7 @@ The owner asked for everything to be implemented ("go ahead and do implement all
 | 3.11 i18n EN + বাংলা | ⬜ | the Bengali font is bundled; strings are English only |
 | 4.1 PWA | ⬜ | |
 | 4.2–4.4 accounts, recurring, reports | ⬜ | |
-| 4.5 CSV import + exports | 🟡 | CSV **export** done; import wizard not started |
+| 4.5 CSV import + exports | ✅ | CSV export done; **import done (2026-11-13)**: the app's own CSV and the encrypted backup (`.ltvault.json`) both import into the open vault with a preview, duplicate skipping, new categories, an atomic write and Undo (ARCHITECTURE, Import). Not a column-mapping wizard: files that are not in the export's format are refused with a clear message |
 | 4.6 quick-add parser | ✅ | |
 | 4.7 insights | ✅ | `lib/insights.ts`, shown on Overview |
 | 4.8–4.12 goals, dena-paona, attachments, undo/redo, extras | ⬜ | entry-delete undo exists as a toast only |

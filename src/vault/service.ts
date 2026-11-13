@@ -13,12 +13,15 @@ import {
   sealEnvelope,
   serializeEnvelope,
   unlockWithPassword,
+  unlockWithRecoveryKey,
 } from "@/crypto/envelope";
 import type { Bytes } from "@/crypto/bytes";
+import { readImportSource } from "@/db/importer";
 import { getMeta, setMeta } from "@/db/repo";
 import { enableForeignKeys, migrate } from "@/db/schema";
 import { type Database, type SqlJsStatic, query, withTransaction } from "@/db/sql";
 import { todayLocal } from "@/lib/dates";
+import type { ImportSource } from "@/lib/importPlan";
 import { DEFAULT_CURRENCY } from "@/lib/money";
 import { estimateStrength } from "@/lib/password";
 import { type LegacyReport, type LegacyUser, importLegacyUser, isSqliteFile, listLegacyUsers } from "./legacy";
@@ -449,6 +452,32 @@ export class VaultService {
     await this.deps.storage.set(vaultKey(meta.id), serializeEnvelope(envelope, meta.name));
     await this.writeIndex([...vaults, meta]);
     return meta;
+  }
+
+  /**
+   * Open a backup file in memory and return what is inside, so its entries can be added to the open vault.
+   * Needs the backup's own password or recovery key. Nothing is stored and the open vault is not touched;
+   * the temporary database is closed and its decrypted bytes are wiped before this returns.
+   */
+  async readBackup(json: string, credential: { password: string } | { recoveryKey: string }): Promise<ImportSource & { name: string | null }> {
+    const { envelope, name } = parseBackup(json);
+    const { plaintext } = "password" in credential
+      ? await unlockWithPassword(envelope, credential.password)
+      : await unlockWithRecoveryKey(envelope, credential.recoveryKey);
+    let db: Database;
+    try {
+      db = new this.deps.sql.Database(plaintext);
+    } catch {
+      throw new CorruptVaultError();
+    } finally {
+      plaintext.fill(0);
+    }
+    try {
+      migrate(db); // upgrades the temporary copy only; throws FutureSchemaError for a backup from a newer app
+      return { ...readImportSource(db), name: name ?? null };
+    } finally {
+      db.close();
+    }
   }
 
   /** Remove one vault. Requires proof of the password so the lock screen cannot be used to destroy data. */

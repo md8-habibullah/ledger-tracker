@@ -11,7 +11,7 @@ It is a client-only React and TypeScript app. The database is SQLite compiled to
 - **Your categories.** Rename, recolour, merge or archive. Entries follow the change.
 - **Overview.** Balance, money in and out, six-month cash flow, top spending against last month, and plain-language notes worked out from your entries.
 - **Taka first.** Amounts are stored as whole minor units (paisa), so totals are exact. Lakh and crore grouping, true minus signs.
-- **Backups you control.** Download the encrypted vault file and restore it anywhere. Export entries as CSV.
+- **Backups you control.** Download the encrypted vault file and restore it anywhere. Export entries as CSV, and import either file back.
 - **Several vaults.** One password per vault, chosen from a list on the lock screen.
 - **Demo vault.** Sample data in memory only. Nothing is written to the device.
 - **Migration.** If a vault from the earlier, unencrypted version exists, it is encrypted into a new vault and checked against the original. The old copy is deleted only when you say so.
@@ -57,7 +57,7 @@ src/
   db/          SQLite wrapper, versioned migrations, repositories     (+ tests)
   vault/       vault service, storage, legacy import, demo data,
                React provider and data hooks                          (+ tests)
-  lib/         money, dates, stats, CSV, insights, quick-entry parser,
+  lib/         money, dates, stats, CSV export and import, insights, quick-entry parser,
                password strength                                      (+ tests)
   theme/       theme and density provider
   components/  ledger/ (domain UI), layout/, auth/, landing/, ui/ (shadcn)

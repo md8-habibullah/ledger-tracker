@@ -2,7 +2,9 @@ import initSqlJs from "sql.js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { InvalidBackupError, WrongCredentialsError, InvalidRecoveryKeyError } from "@/crypto/envelope";
 import { fromBase64 } from "@/crypto/bytes";
-import { addTransaction, listBudgets, listCategories, listTransactions } from "@/db/repo";
+import { applyImport } from "@/db/importer";
+import { addTransaction, listBudgets, listCategories, listTransactions, upsertBudget } from "@/db/repo";
+import { planImport } from "@/lib/importPlan";
 import { FutureSchemaError, LATEST_SCHEMA_VERSION } from "@/db/schema";
 import { type SqlJsStatic, query } from "@/db/sql";
 import { buildDemoData } from "./demo";
@@ -219,6 +221,71 @@ describe("backup, restore, delete", () => {
     await expect(service.importBackup(json)).rejects.toBeInstanceOf(VaultExistsError);
     await expect(service.importBackup(json, { overwrite: true })).resolves.toMatchObject({ id: meta.id });
     await expect(service.importBackup("not json")).rejects.toBeInstanceOf(InvalidBackupError);
+  });
+
+  it("reads a backup in memory with its password or its recovery key, and stores nothing", async () => {
+    const { service, storage } = makeService();
+    const { meta, recoveryKey } = await service.create({ name: "Travel", password: PW });
+    addTransaction(service.database(), { kind: "expense", amountMinor: 4200, categoryId: food(service).id, note: "dinner", occurredOn: "2026-11-02" });
+    upsertBudget(service.database(), { categoryId: food(service).id, amountMinor: 90000, period: "monthly" });
+    await service.save();
+    const { json } = await service.exportBackup(meta.id);
+    await service.lock();
+
+    const other = await service.create({ name: "Home", password: "a different long password" });
+    const stored = storage.dump();
+
+    for (const credential of [{ password: PW }, { recoveryKey }]) {
+      const contents = await service.readBackup(json, credential);
+      expect(contents).toMatchObject({ name: "Travel", currency: "BDT" });
+      expect(contents.entries).toEqual([{ kind: "expense", categoryName: "Food & Dining", amountMinor: 4200, note: "dinner", occurredOn: "2026-11-02" }]);
+      expect(contents.budgets).toEqual([{ categoryName: "Food & Dining", period: "monthly", amountMinor: 90000 }]);
+      expect(contents.categories.length).toBeGreaterThan(10);
+    }
+    // the open vault is untouched and nothing was written anywhere
+    expect(service.getSnapshot()).toMatchObject({ status: "unlocked", meta: { id: other.meta.id } });
+    expect(listTransactions(service.database())).toEqual([]);
+    expect(storage.dump()).toEqual(stored);
+  });
+
+  it("refuses a backup with the wrong password, a wrong recovery key, or a file that is not a backup", async () => {
+    const { service } = makeService();
+    const { meta } = await service.create({ name: "Home", password: PW });
+    const { json } = await service.exportBackup(meta.id);
+    await expect(service.readBackup(json, { password: "not the password" })).rejects.toBeInstanceOf(WrongCredentialsError);
+    await expect(service.readBackup(json, { recoveryKey: "AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA" })).rejects.toBeInstanceOf(InvalidRecoveryKeyError);
+    await expect(service.readBackup("not json", { password: PW })).rejects.toBeInstanceOf(InvalidBackupError);
+    await expect(service.readBackup(JSON.stringify({ format: "something-else" }), { password: PW })).rejects.toBeInstanceOf(InvalidBackupError);
+    expect(service.getSnapshot().status).toBe("unlocked");
+  });
+
+  it("merges a backup into another open vault, and a second merge adds nothing", async () => {
+    const { service } = makeService();
+    const a = await service.create({ name: "Phone", password: PW });
+    addTransaction(service.database(), { kind: "expense", amountMinor: 4200, categoryId: food(service).id, note: "dinner", occurredOn: "2026-11-02" });
+    addTransaction(service.database(), { kind: "expense", amountMinor: 4200, categoryId: food(service).id, note: "dinner", occurredOn: "2026-11-02" });
+    await service.save();
+    const { json } = await service.exportBackup(a.meta.id);
+    await service.create({ name: "Laptop", password: "a different long password" });
+    addTransaction(service.database(), { kind: "expense", amountMinor: 4200, categoryId: food(service).id, note: "dinner", occurredOn: "2026-11-02" });
+
+    const merge = async () => {
+      const contents = await service.readBackup(json, { password: PW });
+      const db = service.database();
+      const plan = planImport(contents, { categories: listCategories(db, { includeArchived: true }), transactions: listTransactions(db), budgets: listBudgets(db) }, { skipDuplicates: true });
+      applyImport(db, plan);
+      await service.save();
+      return plan;
+    };
+    expect((await merge()).entries).toHaveLength(1); // the laptop already had one of the two identical dinners
+    expect(listTransactions(service.database())).toHaveLength(2);
+    expect((await merge()).entries).toHaveLength(0);
+    expect(listTransactions(service.database())).toHaveLength(2);
+
+    await service.lock(); // and it is on disk, encrypted, not just in memory
+    const [, laptop] = await service.list();
+    await service.unlock(laptop.id, "a different long password");
+    expect(listTransactions(service.database())).toHaveLength(2);
   });
 
   it("deleting a vault needs its password", async () => {

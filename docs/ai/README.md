@@ -24,12 +24,12 @@ Entry points elsewhere: [`/CLAUDE.md`](../../CLAUDE.md) (short brief for Claude 
 | Area | State |
 |---|---|
 | Audit & docs | done 2026-11-11; docs updated after implementation |
-| Phases 0–2 (truth, data layer, real encryption) | **implemented**, uncommitted; 173 unit tests; browser-verified on a production build with the enforced CSP |
+| Phases 0–2 (truth, data layer, real encryption) | **implemented**, uncommitted; 254 unit tests; browser-verified on a production build with the enforced CSP |
 | Phase 3 (design system, pages) | **implemented**; no prototype review, no axe/Lighthouse pass yet |
-| Phase 4 (feature depth) | quick-add parser, insights, CSV export done; the rest **not started** |
+| Phase 4 (feature depth) | quick-add parser, insights, CSV export, CSV and backup import done; the rest **not started** |
 | Phase 5 (showcase) | landing, demo, security page, case study, headers, robots/sitemap done; `og:image`, canonical, `SECURITY.md`, E2E/Lighthouse gates, video **open** |
 | Findings | all `SEC`/`DATA`/`BUG`/`DEBT` resolved or marked partial in [CURRENT-STATE §0.2](./CURRENT-STATE.md) |
 | Owner decisions | applied at defaults; D7 (brand/agency credit) **open**; everything else awaiting confirmation |
-| Not exercised in a real browser | legacy migration, backup restore via file picker, two-tab locking, Safari/Firefox |
+| Not exercised in a real browser | legacy migration, two-tab locking, Safari/Firefox |
 
 Update this table when the state changes.

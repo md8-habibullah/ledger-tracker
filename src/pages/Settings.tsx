@@ -12,6 +12,7 @@ import { PasswordField, UsernameHint } from "@/components/auth/PasswordField";
 import { RecoveryKeyPanel } from "@/components/auth/RecoveryKeyPanel";
 import { PageHeader, RuleSection } from "@/components/ledger/bits";
 import { Logo } from "@/components/brand/LogoMark";
+import { ImportButton } from "@/components/ledger/ImportDialog";
 import { setMeta } from "@/db/repo";
 import { WrongCredentialsError } from "@/crypto/envelope";
 import { downloadText, transactionsToCsv } from "@/lib/csv";
@@ -355,11 +356,17 @@ function DataTab() {
   };
   return (
     <>
-      <Row title="Encrypted backup" description="A file you can keep anywhere. It is as safe as the vault itself: opening it needs your password or recovery key. Restore it from the lock screen.">
-        <Button variant="outline" className="gap-2" onClick={() => void backup()} disabled={demo}><Download className="h-4 w-4" aria-hidden />Download backup</Button>
+      <Row title="Encrypted backup" description="A file you can keep anywhere. It is as safe as the vault itself: opening it needs your password or recovery key. Restore it as its own vault from the lock screen, or add its entries to this vault with Import.">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => void backup()} disabled={demo}><Download className="h-4 w-4" aria-hidden />Download backup</Button>
+          <ImportButton origin="backup" disabled={demo}>Import from backup</ImportButton>
+        </div>
       </Row>
-      <Row title="Spreadsheet export" description="All entries as a CSV file. This file is NOT encrypted - store it carefully.">
-        <Button variant="outline" className="gap-2" onClick={csv}><FileDown className="h-4 w-4" aria-hidden />Export all entries (CSV)</Button>
+      <Row title="Spreadsheet (CSV)" description="All entries as a CSV file with the columns Date, Type, Category, Note and Amount. This file is NOT encrypted - store it carefully. The same file imports back here, on this or another device; entries the vault already has are skipped.">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="gap-2" onClick={csv}><FileDown className="h-4 w-4" aria-hidden />Export all entries (CSV)</Button>
+          <ImportButton origin="csv">Import entries (CSV)</ImportButton>
+        </div>
       </Row>
       <Row title="Storage" description="Browsers can clear site data under pressure. Asking for persistent storage lowers that risk.">
         <StorageStatus />

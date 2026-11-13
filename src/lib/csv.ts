@@ -4,14 +4,21 @@ import { minorToInputString } from "./money";
 /**
  * CSV for spreadsheets. Free-text cells that start with = + - @ (or tab/CR) get a leading single quote so
  * Excel/Sheets show them as text instead of executing a note like `=HYPERLINK(...)` (CSV injection).
+ * Apostrophes already in front of such a character are counted too (`'=x` is written as `''=x`), so
+ * `unguardCell` can undo the guard exactly and an exported file imports back unchanged.
  */
-const FORMULA_START = /^[=+\-@\t\r]/;
+const FORMULA_START = /^'*[=+\-@\t\r]/;
 
 export function csvCell(value: string | number): string {
   let text = String(value);
   // Numbers we generate (amounts) are plain; only guard free text.
   if (typeof value === "string" && FORMULA_START.test(text)) text = `'${text}`;
   return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+/** The inverse of the guard in `csvCell`: drop the one apostrophe it added in front of a formula character. */
+export function unguardCell(text: string): string {
+  return text.startsWith("'") && FORMULA_START.test(text) ? text.slice(1) : text;
 }
 
 export function toCsv(rows: (string | number)[][]): string {

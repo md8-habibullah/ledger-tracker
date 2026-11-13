@@ -32,7 +32,7 @@
 | Typecheck | `pnpm typecheck` | `tsc --noEmit -p tsconfig.app.json`; baseline 0 errors |
 | Strict typecheck | `node_modules/.bin/tsc --noEmit -p tsconfig.strict.json` | strict mode over `crypto/ db/ lib/ vault/ config/`; keep it clean |
 | Lint | `pnpm lint` | baseline 0 errors, 0 warnings |
-| Tests | `pnpm test` (`pnpm test:watch`) | Vitest 3.2.7, Node environment, 173 tests |
+| Tests | `pnpm test` (`pnpm test:watch`) | Vitest 3.2.7, Node environment, 254 tests |
 | Everything | `pnpm check` | typecheck → lint → test → build |
 | Preview build | `pnpm preview` | plain `vite preview`; for header-accurate testing serve `dist/` with the headers from `vercel.json` |
 
